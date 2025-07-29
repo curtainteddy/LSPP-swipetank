@@ -1,0 +1,301 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 25% 97%;
+    --foreground: 222 47% 11%;
+
+    /* Deep blue primary colors */
+    --primary: 222 83% 53%;
+    --primary-foreground: 210 40% 98%;
+
+    /* Secondary color - teal */
+    --secondary: 196 100% 50%;
+    --secondary-foreground: 222 47% 11%;
+
+    /* Accent color - vibrant purple */
+    --accent: 265 89% 78%;
+    --accent-foreground: 222 47% 11%;
+
+    /* Muted backgrounds */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 8% 46%;
+
+    /* Card styling */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    /* Popover styling */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Destructive actions */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Borders and inputs */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 222 83% 53%;
+
+    /* Border radius */
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    /* Deep blue primary colors in dark mode */
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+
+    /* Secondary color - teal in dark mode */
+    --secondary: 196 100% 50%;
+    --secondary-foreground: 222 47% 11%;
+
+    /* Accent color - vibrant purple in dark mode */
+    --accent: 265 89% 78%;
+    --accent-foreground: 222 47% 11%;
+
+    /* Muted backgrounds in dark mode */
+    --muted: 223 47% 20%;
+    --muted-foreground: 215 20% 65%;
+
+    /* Card styling in dark mode */
+    --card: 224 71% 4%;
+    --card-foreground: 210 40% 98%;
+
+    /* Popover styling in dark mode */
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Destructive actions in dark mode */
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Borders and inputs in dark mode */
+    --border: 223 47% 20%;
+    --input: 223 47% 20%;
+    --ring: 221 83% 53%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom gradient backgrounds */
+.gradient-bg-1 {
+  background: linear-gradient(135deg, hsl(222 83% 53% / 0.9), hsl(224 71% 35% / 0.9));
+}
+
+.gradient-bg-2 {
+  background: linear-gradient(135deg, hsl(224 71% 35% / 0.9), hsl(196 100% 50% / 0.9));
+}
+
+.gradient-bg-3 {
+  background: linear-gradient(135deg, hsl(265 89% 78% / 0.9), hsl(222 83% 53% / 0.9));
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px -10px hsl(var(--primary) / 0.3);
+}
+
+/* Button animations */
+.btn-pulse {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-pulse::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.5s, opacity 0.5s;
+}
+
+.btn-pulse:active::after {
+  transform: scale(2);
+  opacity: 0;
+  transition: 0s;
+}
+
+/* Swipe animation */
+@keyframes swipeRight {
+  0% {
+    transform: translateX(0) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100px) rotate(10deg);
+    opacity: 0;
+  }
+}
+
+@keyframes swipeLeft {
+  0% {
+    transform: translateX(0) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100px) rotate(-10deg);
+    opacity: 0;
+  }
+}
+
+.swipe-right {
+  animation: swipeRight 0.5s forwards;
+}
+
+.swipe-left {
+  animation: swipeLeft 0.5s forwards;
+}
+
+/* Gradient shadows */
+.shadow-blue-glow {
+  box-shadow: 0 8px 30px -6px hsl(222 83% 53% / 0.5);
+}
+
+.shadow-purple-glow {
+  box-shadow: 0 8px 30px -6px hsl(265 89% 78% / 0.5);
+}
+
+.shadow-teal-glow {
+  box-shadow: 0 8px 30px -6px hsl(196 100% 50% / 0.5);
+}
+
+/* Card with 2:3 aspect ratio */
+.aspect-2-3 {
+  aspect-ratio: 2 / 3;
+}
+
+/* Gradient overlay for cards */
+.card-overlay {
+  background: linear-gradient(
+    to top,
+    hsl(224 71% 4% / 0.95) 0%,
+    hsl(224 71% 4% / 0.8) 30%,
+    hsl(224 71% 4% / 0.4) 60%,
+    transparent 100%
+  );
+}
+
+.dark .card-overlay {
+  background: linear-gradient(
+    to top,
+    hsl(224 71% 4% / 0.95) 0%,
+    hsl(224 71% 4% / 0.8) 30%,
+    hsl(224 71% 4% / 0.4) 60%,
+    transparent 100%
+  );
+}
+
+/* View toggle animations */
+.view-toggle-desktop [data-smartphone] {
+  transform: rotate(-90deg);
+  opacity: 0;
+}
+
+.view-toggle-desktop [data-monitor] {
+  transform: rotate(0deg);
+  opacity: 1;
+}
+
+/* Grid pattern background for desktop view */
+.bg-grid-pattern {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Enhanced card hover effects for desktop */
+.desktop-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+.desktop-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 20px 40px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Glassmorphism effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-effect {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Smooth scale animation */
+.scale-on-hover {
+  transition: transform 0.2s ease-in-out;
+}
+
+.scale-on-hover:hover {
+  transform: scale(1.05);
+}
+
+/* Text gradient */
+.gradient-text {
+  background: linear-gradient(135deg, hsl(222 83% 53%), hsl(196 100% 50%), hsl(265 89% 78%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animated gradient border */
+.gradient-border {
+  position: relative;
+  background: linear-gradient(135deg, hsl(222 83% 53%), hsl(196 100% 50%), hsl(265 89% 78%));
+  padding: 2px;
+  border-radius: 12px;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: hsl(var(--card));
+  border-radius: 10px;
+  z-index: -1;
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}

@@ -1,0 +1,169 @@
+"use client"
+
+import type React from "react"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Bell, Search, Menu, MessageCircle, Plus } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Logo } from "@/components/ui/logo"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { motion } from "framer-motion"
+import { useUser } from "@/contexts/user-context"
+
+interface TopNavigationProps {
+  sidebarOpen: boolean
+  setSidebarOpen: (open: boolean) => void
+  userRole: "innovator" | "investor" | "accelerator"
+  isMobile: boolean
+}
+
+export function TopNavigation({ sidebarOpen, setSidebarOpen, userRole, isMobile }: TopNavigationProps) {
+  const router = useRouter()
+  const [searchQuery, setSearchQuery] = useState("")
+  const { userType } = useUser()
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
+    }
+  }
+
+  const getRoleSpecificActions = () => {
+    if (userType === "innovator") {
+      return (
+        <Button
+          onClick={() => router.push("/projects/new")}
+          className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          New Project
+        </Button>
+      )
+    } else {
+      return (
+        <Button
+          onClick={() => router.push("/browse")}
+          className="bg-gradient-to-r from-secondary to-accent hover:from-secondary/90 hover:to-accent/90 text-white"
+        >
+          Browse Projects
+        </Button>
+      )
+    }
+  }
+
+  return (
+    <motion.header
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50"
+    >
+      <div className="flex items-center justify-between px-6 py-3">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="hover:bg-primary/10"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+
+          {!isMobile && <Logo />}
+        </div>
+
+        {/* Search Bar */}
+        <div className="flex-1 max-w-md mx-4">
+          <form onSubmit={handleSearch} className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={userType === "investor" ? "Search projects..." : "Search analytics..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 border-primary/20 focus:border-primary/50 bg-background/50"
+            />
+          </form>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {!isMobile && getRoleSpecificActions()}
+
+          {/* Messages */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/messages")}
+            className="relative hover:bg-primary/10"
+          >
+            <MessageCircle className="h-5 w-5" />
+            <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-secondary flex items-center justify-center">
+              3
+            </Badge>
+          </Button>
+
+          {/* Notifications */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative hover:bg-primary/10">
+                <Bell className="h-5 w-5" />
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-destructive flex items-center justify-center">
+                  5
+                </Badge>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="flex flex-col items-start p-4">
+                <div className="font-medium">New investor match</div>
+                <div className="text-sm text-muted-foreground">TechVentures is interested in EcoTrack</div>
+                <div className="text-xs text-muted-foreground mt-1">5 minutes ago</div>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex flex-col items-start p-4">
+                <div className="font-medium">Analysis completed</div>
+                <div className="text-sm text-muted-foreground">Your competitor analysis is ready</div>
+                <div className="text-xs text-muted-foreground mt-1">1 hour ago</div>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-center text-primary">View all notifications</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <ThemeToggle />
+
+          {/* User Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/placeholder.svg" alt="User" />
+                  <AvatarFallback>JD</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => router.push("/profile")}>Profile</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => router.push("/auth/login")}>Log out</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+    </motion.header>
+  )
+}
