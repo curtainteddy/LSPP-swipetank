@@ -20,6 +20,7 @@ import { Logo } from "@/components/ui/logo"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { motion } from "framer-motion"
 import { useUser } from "@/contexts/user-context"
+import { SignOutButton } from "@clerk/nextjs"
 
 interface TopNavigationProps {
   sidebarOpen: boolean
@@ -159,7 +160,9 @@ export function TopNavigation({ sidebarOpen, setSidebarOpen, userRole, isMobile 
               <DropdownMenuItem onClick={() => router.push("/profile")}>Profile</DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push("/auth/login")}>Log out</DropdownMenuItem>
+              <SignOutButton redirectUrl="/">
+                <DropdownMenuItem>Log out</DropdownMenuItem>
+              </SignOutButton>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
