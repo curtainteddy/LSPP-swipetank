@@ -40,7 +40,11 @@ interface NavItem {
 export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const { userType } = useUser()
+  const { userType, setUserType } = useUser()
+
+  const toggleUserType = () => {
+    setUserType(userType === "innovator" ? "investor" : "innovator")
+  }
 
   const getNavigationItems = (): NavItem[] => {
     const commonItems: NavItem[] = [
@@ -177,10 +181,11 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
                   <Badge
                     variant="outline"
                     className={cn(
-                      "py-2 text-sm font-medium",
-                      userType === "innovator" && "bg-primary/10 border-primary/20 text-primary",
-                      userType === "investor" && "bg-secondary/10 border-secondary/20 text-secondary",
+                      "py-2 text-sm font-medium cursor-pointer hover:bg-opacity-80 transition-all duration-200",
+                      userType === "innovator" && "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20",
+                      userType === "investor" && "bg-secondary/10 border-secondary/20 text-secondary hover:bg-secondary/20",
                     )}
+                    onClick={toggleUserType}
                   >
                     {userType === "innovator" ? "Innovator Mode" : "Investor Mode"}
                   </Badge>
@@ -196,10 +201,11 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
                   <Badge
                     variant="outline"
                     className={cn(
-                      "w-full justify-center py-2 text-sm font-medium",
-                      userType === "innovator" && "bg-primary/10 border-primary/20 text-primary",
-                      userType === "investor" && "bg-secondary/10 border-secondary/20 text-secondary",
+                      "w-full justify-center py-2 text-sm font-medium cursor-pointer hover:bg-opacity-80 transition-all duration-200",
+                      userType === "innovator" && "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20",
+                      userType === "investor" && "bg-secondary/10 border-secondary/20 text-secondary hover:bg-secondary/20",
                     )}
+                    onClick={toggleUserType}
                   >
                     {userType === "innovator" ? "Innovator Mode" : "Investor Mode"}
                   </Badge>
