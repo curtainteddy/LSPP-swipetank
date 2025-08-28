@@ -1,20 +1,119 @@
-// Prisma schema for NeonTech PostgreSQL
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(uuid())
-  clerkId   String   @unique
-  email     String   @unique
-  firstName String?
-  lastName  String?
-  imageUrl  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    id           String    @id @default(cuid())
+    clerkUserId  String    @unique
+    email        String    @unique
+    name         String
+    userType     UserType?
+    profileImage String?
+    bio          String?
+    createdAt    DateTime  @default(now())
+    updatedAt    DateTime  @updatedAt
+
+    // Relations
+    projects    Project[]
+    investments Investment[]
+    likes       ProjectLike[]
+
+    @@map("users")
+}
+
+model Project {
+    id          String        @id @default(cuid())
+    title       String
+    description String
+    price       Decimal?
+    status      ProjectStatus @default(DRAFT)
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
+
+    // Relations
+    inventor    User           @relation(fields: [inventorId], references: [id], onDelete: Cascade)
+    inventorId  String
+    images      ProjectImage[]
+    tags        ProjectTag[]
+    investments Investment[]
+    likes       ProjectLike[]
+
+    @@map("projects")
+}
+
+model ProjectImage {
+    id        String  @id @default(cuid())
+    url       String
+    isPrimary Boolean @default(false)
+    order     Int     @default(0)
+
+    project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    projectId String
+
+    @@map("project_images")
+}
+
+model Tag {
+    id       String       @id @default(cuid())
+    name     String       @unique
+    color    String?      @default("#gray")
+    projects ProjectTag[]
+
+    @@map("tags")
+}
+
+model ProjectTag {
+    project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    projectId String
+    tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+    tagId     String
+
+    @@id([projectId, tagId])
+    @@map("project_tags")
+}
+
+model Investment {
+    id        String   @id @default(cuid())
+    amount    Decimal
+    message   String?
+    createdAt DateTime @default(now())
+
+    investor   User    @relation(fields: [investorId], references: [id])
+    investorId String
+    project    Project @relation(fields: [projectId], references: [id])
+    projectId  String
+
+    @@map("investments")
+}
+
+model ProjectLike {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+
+    user      User    @relation(fields: [userId], references: [id])
+    userId    String
+    project   Project @relation(fields: [projectId], references: [id])
+    projectId String
+
+    @@unique([userId, projectId])
+    @@map("project_likes")
+}
+
+enum UserType {
+    INVENTOR
+    INVESTOR
+}
+
+enum ProjectStatus {
+    DRAFT
+    PUBLISHED
+    ARCHIVED
 }
