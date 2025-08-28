@@ -131,11 +131,40 @@ export default function NewProjectForm() {
   const handleSubmit = async () => {
     setIsSubmitting(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
+    try {
+      // Prepare project data
+      const projectData = {
+        title: formData.name,
+        description: `${formData.tagline}\n\n${formData.description}\n\nProblem: ${formData.problemStatement}\n\nSolution: ${formData.solution}\n\nTarget Market: ${formData.targetMarket}\n\nUse of Funds: ${formData.useOfFunds}\n\nTeam Size: ${formData.teamSize}\n\nKey Team Members: ${formData.keyTeamMembers}`,
+        price: null, // You can add price field to the form if needed
+        status: "DRAFT", // Start as draft, user can publish later
+        tags: formData.tags,
+        images: [], // File upload would need to be implemented separately
+      }
+
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(projectData),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to create project")
+      }
+
+      const result = await response.json()
+      console.log("Project created:", result.project)
+
+      // Redirect to projects page
       router.push("/projects")
-    }, 2000)
+    } catch (error) {
+      console.error("Error creating project:", error)
+      alert("Failed to create project. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const nextStep = () => {
@@ -464,7 +493,7 @@ export default function NewProjectForm() {
   }
 
   return (
-    <AppLayout userRole="innovator">
+    <AppLayout>
       <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
