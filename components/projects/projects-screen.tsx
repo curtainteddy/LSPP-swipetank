@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, TrendingUp } from "lucide-react"
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye, TrendingUp, Send, Archive } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,82 +12,139 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AppLayout } from "@/components/layout/app-layout"
 import { motion } from "framer-motion"
 
-const projects = [
-  {
-    id: 1,
-    name: "EcoTrack Mobile",
-    tagline: "Sustainable living app for carbon footprint tracking",
-    status: "active",
-    progress: 75,
-    industry: "Sustainability",
-    fundingGoal: "$250K - $500K",
-    investmentType: "Seed",
-    lastUpdated: "2 hours ago",
-    views: 1240,
-    interests: 12,
-    messages: 5,
-    gradient: "from-green-500 to-emerald-500",
-  },
-  {
-    id: 2,
-    name: "FinTech Dashboard",
-    tagline: "AI-powered personal finance management",
-    status: "completed",
-    progress: 100,
-    industry: "Finance",
-    fundingGoal: "$100K - $250K",
-    investmentType: "Pre-Seed",
-    lastUpdated: "1 day ago",
-    views: 876,
-    interests: 8,
-    messages: 3,
-    gradient: "from-blue-500 to-cyan-500",
-  },
-  {
-    id: 3,
-    name: "HealthCare AI",
-    tagline: "Medical diagnosis assistance platform",
-    status: "draft",
-    progress: 25,
-    industry: "Healthcare",
-    fundingGoal: "$500K - $1M",
-    investmentType: "Series A",
-    lastUpdated: "3 days ago",
-    views: 432,
-    interests: 3,
-    messages: 1,
-    gradient: "from-purple-500 to-pink-500",
-  },
-]
+interface Project {
+  id: string
+  title: string
+  description: string
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED"
+  createdAt: string
+  updatedAt: string
+  images: Array<{ url: string; isPrimary: boolean }>
+  tags: Array<{ tag: { name: string } }>
+  _count: {
+    likes: number
+    investments: number
+  }
+}
 
 export default function ProjectsScreen() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchProjects()
+  }, [])
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch("/api/projects/my")
+      if (response.ok) {
+        const data = await response.json()
+        setProjects(data.projects || [])
+      }
+    } catch (error) {
+      console.error("Error fetching projects:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleStatusUpdate = async (projectId: string, newStatus: "DRAFT" | "PUBLISHED" | "ARCHIVED") => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (response.ok) {
+        // Refresh the projects list
+        fetchProjects()
+      } else {
+        alert("Failed to update project status")
+      }
+    } catch (error) {
+      console.error("Error updating project status:", error)
+      alert("Failed to update project status")
+    }
+  }
+
+  const handleDeleteProject = async (projectId: string) => {
+    if (!confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        // Refresh the projects list
+        fetchProjects()
+      } else {
+        alert("Failed to delete project")
+      }
+    } catch (error) {
+      console.error("Error deleting project:", error)
+      alert("Failed to delete project")
+    }
+  }
 
   const filteredProjects = projects.filter((project) => {
     const matchesSearch =
-      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.tagline.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesFilter = filterStatus === "all" || project.status === filterStatus
+      project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.description.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesFilter = filterStatus === "all" || project.status.toLowerCase() === filterStatus
     return matchesSearch && matchesFilter
   })
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active":
+      case "PUBLISHED":
         return "bg-green-500/10 text-green-500 border-green-500/20"
-      case "completed":
-        return "bg-blue-500/10 text-blue-500 border-blue-500/20"
-      case "draft":
+      case "DRAFT":
         return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+      case "ARCHIVED":
+        return "bg-gray-500/10 text-gray-500 border-gray-500/20"
       default:
         return "bg-gray-500/10 text-gray-500 border-gray-500/20"
     }
   }
 
+  const getStatusProgress = (status: string) => {
+    switch (status) {
+      case "PUBLISHED":
+        return 100
+      case "DRAFT":
+        return 25
+      case "ARCHIVED":
+        return 100
+      default:
+        return 0
+    }
+  }
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-lg">Loading projects...</div>
+          </div>
+        </div>
+      </AppLayout>
+    )
+  }
+
   return (
-    <AppLayout userRole="innovator">
+    <AppLayout>
       <div className="p-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -181,15 +238,17 @@ export default function ProjectsScreen() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${project.gradient}`}></div>
+                          <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></div>
                           <Badge variant="outline" className={getStatusColor(project.status)}>
                             {project.status}
                           </Badge>
                         </div>
                         <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                          {project.name}
+                          {project.title}
                         </CardTitle>
-                        <CardDescription className="mt-1">{project.tagline}</CardDescription>
+                        <CardDescription className="mt-1 line-clamp-2">
+                          {project.description.substring(0, 100)}...
+                        </CardDescription>
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -206,11 +265,26 @@ export default function ProjectsScreen() {
                             <Edit className="h-4 w-4 mr-2" />
                             Edit Project
                           </DropdownMenuItem>
+                          {project.status === "DRAFT" && (
+                            <DropdownMenuItem onClick={() => handleStatusUpdate(project.id, "PUBLISHED")}>
+                              <Send className="h-4 w-4 mr-2" />
+                              Publish Project
+                            </DropdownMenuItem>
+                          )}
+                          {project.status === "PUBLISHED" && (
+                            <DropdownMenuItem onClick={() => handleStatusUpdate(project.id, "DRAFT")}>
+                              <Archive className="h-4 w-4 mr-2" />
+                              Unpublish Project
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem onClick={() => router.push(`/analytics/${project.id}`)}>
                             <TrendingUp className="h-4 w-4 mr-2" />
                             View Analytics
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">
+                          <DropdownMenuItem 
+                            className="text-destructive"
+                            onClick={() => handleDeleteProject(project.id)}
+                          >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete Project
                           </DropdownMenuItem>
@@ -221,40 +295,44 @@ export default function ProjectsScreen() {
 
                   <CardContent className="space-y-4">
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {project.industry}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {project.investmentType}
-                      </Badge>
+                      {project.tags.slice(0, 3).map((tagItem, tagIndex) => (
+                        <Badge key={tagIndex} variant="secondary" className="text-xs">
+                          {tagItem.tag.name}
+                        </Badge>
+                      ))}
+                      {project.tags.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{project.tags.length - 3} more
+                        </Badge>
+                      )}
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Progress</span>
-                        <span className="font-medium">{project.progress}%</span>
+                        <span className="font-medium">{getStatusProgress(project.status)}%</span>
                       </div>
-                      <Progress value={project.progress} className="h-2" />
+                      <Progress value={getStatusProgress(project.status)} className="h-2" />
                     </div>
 
                     <div className="grid grid-cols-3 gap-4 text-center">
                       <div>
-                        <div className="text-lg font-bold text-primary">{project.views}</div>
-                        <div className="text-xs text-muted-foreground">Views</div>
+                        <div className="text-lg font-bold text-primary">{project._count.likes}</div>
+                        <div className="text-xs text-muted-foreground">Likes</div>
                       </div>
                       <div>
-                        <div className="text-lg font-bold text-secondary">{project.interests}</div>
-                        <div className="text-xs text-muted-foreground">Interests</div>
+                        <div className="text-lg font-bold text-secondary">{project._count.investments}</div>
+                        <div className="text-xs text-muted-foreground">Investments</div>
                       </div>
                       <div>
-                        <div className="text-lg font-bold text-accent">{project.messages}</div>
+                        <div className="text-lg font-bold text-accent">0</div>
                         <div className="text-xs text-muted-foreground">Messages</div>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>Updated {project.lastUpdated}</span>
-                      <span>{project.fundingGoal}</span>
+                      <span>Created {new Date(project.createdAt).toLocaleDateString()}</span>
+                      <span>Updated {new Date(project.updatedAt).toLocaleDateString()}</span>
                     </div>
                   </CardContent>
                 </Card>
