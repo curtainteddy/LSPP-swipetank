@@ -15,6 +15,7 @@ import {
   Eye,
   Building,
   X,
+  Plus,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -70,6 +71,12 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
           href: "/dashboard",
           icon: Home,
           description: "Overview and insights",
+        },
+        {
+          title: "Create Project",
+          href: "/projects/new",
+          icon: Plus,
+          description: "Add a new project",
         },
         {
           title: "My Projects",
