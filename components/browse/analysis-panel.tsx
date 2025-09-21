@@ -77,6 +77,7 @@ interface AnalysisPanelProps {
   project: Project
   onClose: () => void
   onRetry: () => void
+  cached?: boolean
 }
 
 export default function AnalysisPanel({
@@ -85,7 +86,8 @@ export default function AnalysisPanel({
   analysisData,
   project,
   onClose,
-  onRetry
+  onRetry,
+  cached = false
 }: AnalysisPanelProps) {
   if (!isVisible) return null
 
@@ -136,6 +138,11 @@ export default function AnalysisPanel({
               <div className="flex items-center gap-2 text-white">
                 <BarChart3 className="h-6 w-6" />
                 <h1 className="text-xl font-semibold">Investment Analysis</h1>
+                {cached && (
+                  <div className="ml-2 px-2 py-1 bg-green-500/20 border border-green-400/30 rounded-full text-xs text-green-300">
+                    Cached
+                  </div>
+                )}
               </div>
             </div>
             <Button
@@ -187,9 +194,15 @@ export default function AnalysisPanel({
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 className="w-12 h-12 border-4 border-white border-t-transparent rounded-full mb-4"
               />
-              <h3 className="text-xl font-semibold mb-2 text-white">Generating AI Analysis</h3>
-              <p className="text-white/70 mb-1">Analyzing market conditions...</p>
-              <p className="text-sm text-white/60">This may take a few moments</p>
+              <h3 className="text-xl font-semibold mb-2 text-white">
+                {cached ? "Loading Cached Analysis" : "Generating AI Analysis"}
+              </h3>
+              <p className="text-white/70 mb-1">
+                {cached ? "Retrieving saved analysis..." : "Analyzing market conditions..."}
+              </p>
+              {!cached && (
+                <p className="text-sm text-white/60">This may take a few moments</p>
+              )}
             </div>
           ) : analysisData?.error ? (
             <div className="flex flex-col items-center justify-center p-12 text-center min-h-[400px]">

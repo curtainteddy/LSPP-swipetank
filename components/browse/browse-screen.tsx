@@ -64,6 +64,7 @@ export default function BrowseScreen() {
   const [showAnalysis, setShowAnalysis] = useState(false)
   const [analysisData, setAnalysisData] = useState<any>(null)
   const [loadingAnalysis, setLoadingAnalysis] = useState(false)
+  const [analysisCached, setAnalysisCached] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -314,6 +315,7 @@ export default function BrowseScreen() {
       
       const data = await response.json()
       setAnalysisData(data.analysis)
+      setAnalysisCached(data.cached || false)
     } catch (error) {
       console.error('Error fetching analysis:', error)
       setAnalysisData({
@@ -327,6 +329,7 @@ export default function BrowseScreen() {
   const handleCloseAnalysis = () => {
     setShowAnalysis(false)
     setAnalysisData(null)
+    setAnalysisCached(false)
   }
 
   if (loading) {
@@ -584,6 +587,7 @@ export default function BrowseScreen() {
         project={currentProject}
         onClose={handleCloseAnalysis}
         onRetry={() => handleShowAnalysis()}
+        cached={analysisCached}
       />
     </div>
   )
