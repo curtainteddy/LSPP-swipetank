@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { Heart, Filter, MessageCircle, Users, Eye, TrendingUp, MapPin, ChevronDown } from "lucide-react"
+import { Heart, Filter, MessageCircle, Users, Eye, TrendingUp, MapPin, ChevronDown, ChevronRight, ArrowRight, BarChart3, Target, Lightbulb } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -60,6 +60,9 @@ export default function BrowseScreen() {
   const [searchQuery, setSearchQuery] = useState("")
   const [likedProjects, setLikedProjects] = useState<Set<string>>(new Set())
   const [isScrolling, setIsScrolling] = useState(false)
+  const [showAnalysis, setShowAnalysis] = useState(false)
+  const [analysisData, setAnalysisData] = useState<any>(null)
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -127,13 +130,16 @@ export default function BrowseScreen() {
       }
     }
 
-    // Handle touch events for mobile
+    // Handle touch events for mobile - Enhanced for horizontal swiping
     let touchStartY = 0
     let touchEndY = 0
+    let touchStartX = 0
+    let touchEndX = 0
     let lastTouchTime = 0
     
     const handleTouchStart = (e: TouchEvent) => {
       touchStartY = e.touches[0].clientY
+      touchStartX = e.touches[0].clientX
     }
     
     const handleTouchEnd = (e: TouchEvent) => {
@@ -141,14 +147,25 @@ export default function BrowseScreen() {
       
       const currentTime = Date.now()
       
-      // Check if we're still in cooldown period
-      if (currentTime - lastTouchTime < SCROLL_COOLDOWN) {
+      touchEndY = e.changedTouches[0].clientY
+      touchEndX = e.changedTouches[0].clientX
+      const deltaY = touchStartY - touchEndY
+      const deltaX = touchEndX - touchStartX
+      const TOUCH_THRESHOLD = 50
+      
+      // Check if horizontal swipe (right swipe for analysis)
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > TOUCH_THRESHOLD) {
+        if (deltaX > 0) {
+          // Swipe right - show analysis
+          handleShowAnalysis()
+        }
         return
       }
       
-      touchEndY = e.changedTouches[0].clientY
-      const deltaY = touchStartY - touchEndY
-      const TOUCH_THRESHOLD = 50
+      // Vertical swipe for navigation
+      if (currentTime - lastTouchTime < SCROLL_COOLDOWN) {
+        return
+      }
       
       if (Math.abs(deltaY) > TOUCH_THRESHOLD) {
         lastTouchTime = currentTime
@@ -271,6 +288,45 @@ export default function BrowseScreen() {
   }
 
   const currentProject = projects[currentIndex]
+
+  // Handle showing analysis panel
+  const handleShowAnalysis = async () => {
+    if (!currentProject) return
+    
+    setShowAnalysis(true)
+    setLoadingAnalysis(true)
+    
+    try {
+      const response = await fetch('/api/analysis/project', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectId: currentProject.id,
+          title: currentProject.title,
+          description: currentProject.description,
+          tags: currentProject.tags.map(t => t.tag.name),
+          price: currentProject.price
+        })
+      })
+      
+      const data = await response.json()
+      setAnalysisData(data.analysis)
+    } catch (error) {
+      console.error('Error fetching analysis:', error)
+      setAnalysisData({
+        error: 'Failed to generate analysis. Please try again.'
+      })
+    } finally {
+      setLoadingAnalysis(false)
+    }
+  }
+
+  const handleCloseAnalysis = () => {
+    setShowAnalysis(false)
+    setAnalysisData(null)
+  }
 
   if (loading) {
     return (
