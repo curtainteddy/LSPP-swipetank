@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { Heart, Filter, MessageCircle, Users, Eye, TrendingUp, MapPin } from "lucide-react"
+import { Heart, Filter, MessageCircle, Users, Eye, TrendingUp, MapPin, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -13,7 +13,7 @@ import { Slider } from "@/components/ui/slider"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { AppLayout } from "@/components/layout/app-layout"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 
 interface Project {
   id: string
@@ -52,13 +52,77 @@ export default function BrowseScreen() {
   const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
   const [likedProjects, setLikedProjects] = useState<Set<string>>(new Set())
+  const [isScrolling, setIsScrolling] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [filters, setFilters] = useState({
     industry: "all",
     investmentType: "all",
     priceRange: [0, 10000],
   })
+
+  useEffect(() => {
+    fetchProjects()
+  }, [])
+
+  // Handle scroll to navigate between projects
+  useEffect(() => {
+    let scrollTimeout: NodeJS.Timeout
+    
+    const handleScroll = (e: WheelEvent) => {
+      if (isScrolling || projects.length === 0) return
+      
+      e.preventDefault()
+      setIsScrolling(true)
+      
+      if (e.deltaY > 0 && currentIndex < projects.length - 1) {
+        // Scroll down - next project
+        setCurrentIndex(prev => prev + 1)
+      } else if (e.deltaY < 0 && currentIndex > 0) {
+        // Scroll up - previous project
+        setCurrentIndex(prev => prev - 1)
+      }
+      
+      // Reset scrolling state after animation
+      scrollTimeout = setTimeout(() => {
+        setIsScrolling(false)
+      }, 800)
+    }
+
+    const container = containerRef.current
+    if (container) {
+      container.addEventListener('wheel', handleScroll, { passive: false })
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('wheel', handleScroll)
+      }
+      clearTimeout(scrollTimeout)
+    }
+  }, [currentIndex, projects.length, isScrolling])
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isScrolling || projects.length === 0) return
+      
+      if (e.key === 'ArrowDown' && currentIndex < projects.length - 1) {
+        setIsScrolling(true)
+        setCurrentIndex(prev => prev + 1)
+        setTimeout(() => setIsScrolling(false), 800)
+      } else if (e.key === 'ArrowUp' && currentIndex > 0) {
+        setIsScrolling(true)
+        setCurrentIndex(prev => prev - 1)
+        setTimeout(() => setIsScrolling(false), 800)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [currentIndex, projects.length, isScrolling])
 
   useEffect(() => {
     fetchProjects()
@@ -71,6 +135,7 @@ export default function BrowseScreen() {
       if (response.ok) {
         const data = await response.json()
         setProjects(data.projects || [])
+        setCurrentIndex(0) // Reset to first project
       }
     } catch (error) {
       console.error("Error fetching projects:", error)
@@ -98,31 +163,51 @@ export default function BrowseScreen() {
 
   const formatPrice = (price: number | null) => {
     if (!price) return "Price on request"
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price)
+    return `$${price.toLocaleString()}`
   }
 
   const getShortDescription = (description: string) => {
-    const firstLine = description.split('\n')[0]
-    return firstLine.length > 120 ? firstLine.substring(0, 120) + '...' : firstLine
+    return description.length > 120 ? description.substring(0, 120) + "..." : description
   }
 
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.description.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesSearch
-  })
+  const nextProject = () => {
+    if (currentIndex < projects.length - 1 && !isScrolling) {
+      setIsScrolling(true)
+      setCurrentIndex(prev => prev + 1)
+      setTimeout(() => setIsScrolling(false), 800)
+    }
+  }
+
+  const prevProject = () => {
+    if (currentIndex > 0 && !isScrolling) {
+      setIsScrolling(true)
+      setCurrentIndex(prev => prev - 1)
+      setTimeout(() => setIsScrolling(false), 800)
+    }
+  }
+
+  const currentProject = projects[currentIndex]
 
   if (loading) {
     return (
       <AppLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-lg text-muted-foreground">Loading projects...</div>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading amazing projects...</p>
+          </div>
+        </div>
+      </AppLayout>
+    )
+  }
+
+  if (projects.length === 0) {
+    return (
+      <AppLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center py-12">
+            <div className="text-lg text-muted-foreground mb-2">No projects found</div>
+            <p className="text-sm text-muted-foreground">Check back later for new projects</p>
           </div>
         </div>
       </AppLayout>
@@ -131,95 +216,98 @@ export default function BrowseScreen() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Browse Projects</h1>
-            <p className="text-muted-foreground">Discover innovative projects and connect with inventors</p>
-          </div>
-          
-          {/* Search and Filters */}
-          <div className="flex gap-3">
-            <Input
-              placeholder="Search projects..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-64"
-            />
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Filter className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <SheetTitle>Filter Projects</SheetTitle>
-                  <SheetDescription>
-                    Narrow down your search with these filters
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="space-y-6 mt-6">
-                  <div>
-                    <Label>Industry</Label>
-                    <Select value={filters.industry} onValueChange={(value) => setFilters(prev => ({ ...prev, industry: value }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Industries</SelectItem>
-                        <SelectItem value="technology">Technology</SelectItem>
-                        <SelectItem value="healthcare">Healthcare</SelectItem>
-                        <SelectItem value="finance">Finance</SelectItem>
-                        <SelectItem value="education">Education</SelectItem>
-                      </SelectContent>
-                    </Select>
+      <div 
+        ref={containerRef}
+        className="min-h-screen overflow-hidden relative"
+      >
+        {/* Fixed Header */}
+        <div className="fixed top-16 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
+          <div className="flex items-center justify-between max-w-7xl mx-auto">
+            <div className="flex items-center gap-4">
+              <h1 className="text-lg font-semibold">Browse Projects</h1>
+              <Badge variant="outline" className="text-xs">
+                {currentIndex + 1} of {projects.length}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Search projects..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-48"
+              />
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Filter className="h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Filter Projects</SheetTitle>
+                    <SheetDescription>
+                      Narrow down your search with these filters
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="space-y-6 mt-6">
+                    <div>
+                      <Label>Industry</Label>
+                      <Select value={filters.industry} onValueChange={(value) => setFilters(prev => ({ ...prev, industry: value }))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Industries</SelectItem>
+                          <SelectItem value="technology">Technology</SelectItem>
+                          <SelectItem value="healthcare">Healthcare</SelectItem>
+                          <SelectItem value="finance">Finance</SelectItem>
+                          <SelectItem value="education">Education</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label>Price Range: ${filters.priceRange[0]} - ${filters.priceRange[1]}</Label>
+                      <Slider
+                        value={filters.priceRange}
+                        onValueChange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}
+                        max={10000}
+                        step={100}
+                        className="mt-2"
+                      />
+                    </div>
                   </div>
-                  
-                  <div>
-                    <Label>Price Range: ${filters.priceRange[0]} - ${filters.priceRange[1]}</Label>
-                    <Slider
-                      value={filters.priceRange}
-                      onValueChange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}
-                      max={10000}
-                      step={100}
-                      className="mt-2"
-                    />
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
 
-        {/* Projects Grid */}
-        {filteredProjects.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-lg text-muted-foreground mb-2">No projects found</div>
-            <p className="text-sm text-muted-foreground">Try adjusting your search criteria</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProjects.map((project, index) => (
+        {/* Project Display Area */}
+        <div className="pt-24 min-h-screen flex items-center justify-center">
+          <AnimatePresence mode="wait">
+            {currentProject && (
               <motion.div
-                key={project.id}
-                initial={{ opacity: 0, y: 20 }}
+                key={currentProject.id}
+                initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
+                exit={{ opacity: 0, y: -50 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="w-full max-w-4xl mx-auto px-4"
               >
-                <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden">
+                <Card className="overflow-hidden shadow-2xl">
                   {/* Project Image */}
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    {project.images.length > 0 ? (
+                  <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+                    {currentProject.images.length > 0 ? (
                       <img
-                        src={project.images.find(img => img.isPrimary)?.url || project.images[0]?.url || "/placeholder.svg"}
-                        alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        src={currentProject.images.find(img => img.isPrimary)?.url || currentProject.images[0]?.url || "/placeholder.svg"}
+                        alt={currentProject.title}
+                        className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                        <div className="text-gray-400 text-4xl">📦</div>
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="text-gray-400 text-8xl">📦</div>
                       </div>
                     )}
                     
@@ -227,110 +315,138 @@ export default function BrowseScreen() {
                     <Button
                       size="icon"
                       variant="secondary"
-                      className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/90 hover:bg-white shadow-sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleLike(project.id)
-                      }}
+                      className="absolute top-6 right-6 h-12 w-12 rounded-full bg-white/90 hover:bg-white shadow-lg"
+                      onClick={() => handleLike(currentProject.id)}
                     >
                       <Heart 
-                        className={`h-4 w-4 ${likedProjects.has(project.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
+                        className={`h-6 w-6 ${likedProjects.has(currentProject.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
                       />
                     </Button>
 
                     {/* Status Badge */}
-                    <Badge className="absolute top-3 left-3 bg-green-500/90 text-white">
+                    <Badge className="absolute top-6 left-6 bg-green-500 text-white text-sm px-3 py-1">
                       Published
                     </Badge>
                   </div>
 
-                  <CardContent className="p-4">
+                  <CardContent className="p-8">
                     {/* Title and Inventor */}
-                    <div className="mb-3">
-                      <h3 className="font-semibold text-lg line-clamp-1 mb-1">{project.title}</h3>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src={project.inventor.profileImage || "/placeholder-user.jpg"} />
-                          <AvatarFallback className="text-xs">
-                            {project.inventor.name.charAt(0).toUpperCase()}
+                    <div className="mb-6">
+                      <h2 className="text-3xl font-bold mb-3">{currentProject.title}</h2>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={currentProject.inventor.profileImage || "/placeholder-user.jpg"} />
+                          <AvatarFallback>
+                            {currentProject.inventor.name.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-sm text-muted-foreground">{project.inventor.name}</span>
+                        <div>
+                          <p className="font-medium">{currentProject.inventor.name}</p>
+                          <p className="text-sm text-muted-foreground">{currentProject.inventor.email}</p>
+                        </div>
                       </div>
                     </div>
 
                     {/* Description */}
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                      {getShortDescription(project.description)}
-                    </p>
+                    <div className="mb-6">
+                      <p className="text-muted-foreground leading-relaxed">
+                        {currentProject.description}
+                      </p>
+                    </div>
 
                     {/* Tags */}
-                    {project.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {project.tags.slice(0, 2).map((tagWrapper) => (
+                    {currentProject.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-6">
+                        {currentProject.tags.map((tagWrapper) => (
                           <Badge 
                             key={tagWrapper.tag.id} 
                             variant="secondary" 
-                            className="text-xs px-2 py-1"
+                            className="px-3 py-1"
                           >
                             {tagWrapper.tag.name}
                           </Badge>
                         ))}
-                        {project.tags.length > 2 && (
-                          <Badge variant="outline" className="text-xs px-2 py-1">
-                            +{project.tags.length - 2}
-                          </Badge>
-                        )}
                       </div>
                     )}
 
-                    {/* Price */}
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-lg font-bold text-primary">
-                        {formatPrice(project.price)}
-                      </span>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Heart className="h-3 w-3" />
-                          {project._count.likes}
+                    {/* Stats and Price */}
+                    <div className="flex items-center justify-between mb-8">
+                      <div className="text-2xl font-bold text-primary">
+                        {formatPrice(currentProject.price)}
+                      </div>
+                      <div className="flex items-center gap-6 text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Heart className="h-5 w-5" />
+                          <span className="font-medium">{currentProject._count.likes} likes</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <TrendingUp className="h-3 w-3" />
-                          {project._count.investments}
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-5 w-5" />
+                          <span className="font-medium">{currentProject._count.investments} investments</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-4">
                       <Button 
-                        size="sm" 
+                        size="lg" 
                         className="flex-1"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(`/projects/${project.id}`)
-                        }}
+                        onClick={() => router.push(`/projects/${currentProject.id}`)}
                       >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View Details
+                        <Eye className="h-5 w-5 mr-2" />
+                        View Full Details
                       </Button>
                       <Button 
-                        size="sm" 
+                        size="lg" 
                         variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleMessage(project.id)
-                        }}
+                        onClick={() => handleMessage(currentProject.id)}
                       >
-                        <MessageCircle className="h-4 w-4" />
+                        <MessageCircle className="h-5 w-5 mr-2" />
+                        Contact Inventor
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Navigation Indicators */}
+        <div className="fixed bottom-8 right-8 flex flex-col items-center gap-4">
+          {/* Scroll Hint */}
+          {!isScrolling && (
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="text-muted-foreground text-sm text-center"
+            >
+              <ChevronDown className="h-6 w-6 mx-auto mb-1" />
+              <p>Scroll to browse</p>
+            </motion.div>
+          )}
+
+          {/* Progress Indicator */}
+          <div className="flex flex-col gap-2">
+            {projects.map((_, index) => (
+              <div
+                key={index}
+                className={`w-2 h-8 rounded-full transition-colors duration-300 ${
+                  index === currentIndex 
+                    ? 'bg-primary' 
+                    : index < currentIndex 
+                      ? 'bg-primary/40' 
+                      : 'bg-gray-200'
+                }`}
+              />
             ))}
           </div>
-        )}
+        </div>
+
+        {/* Keyboard Shortcuts Helper */}
+        <div className="fixed bottom-8 left-8 text-xs text-muted-foreground">
+          <p>Use ↑↓ arrow keys or scroll to navigate</p>
+        </div>
       </div>
     </AppLayout>
   )
