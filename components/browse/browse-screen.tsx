@@ -486,8 +486,8 @@ export default function BrowseScreen() {
                   </motion.button>
                 </div>
 
-                {/* Swipe Right Indicator - Center Right */}
-                <motion.div
+                {/* Swipe Right Indicator - Center Right (clickable) */}
+                <motion.button
                   initial={{ opacity: 0.7, x: 0 }}
                   animate={{ 
                     opacity: [0.7, 1, 0.7],
@@ -498,18 +498,20 @@ export default function BrowseScreen() {
                     repeat: Infinity,
                     ease: "easeInOut"
                   }}
-                  className="absolute right-6 top-1/2 transform -translate-y-1/2"
+                  className="absolute right-20 top-1/2 transform -translate-y-1/2 z-40"
+                  onClick={() => handleShowAnalysis()}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 border-2 border-white/30">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 border-2 border-white/30 hover:bg-white/30 transition-colors">
                     <div className="flex items-center gap-2">
                       <BarChart3 className="h-6 w-6 text-white" />
                       <ArrowRight className="h-5 w-5 text-white" />
                     </div>
                   </div>
-                  <div className="text-white text-xs mt-2 text-center font-medium">
-                    Swipe for Analysis
+                  <div className="text-white text-xs mt-2 text-center font-medium pointer-events-none">
+                    Tap for Analysis
                   </div>
-                </motion.div>
+                </motion.button>
 
                 {/* Top Left Status */}
                 <div className="absolute top-6 left-6">
