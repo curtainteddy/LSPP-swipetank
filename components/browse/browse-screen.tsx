@@ -87,16 +87,26 @@ export default function BrowseScreen() {
   useEffect(() => {
     let scrollTimeout: NodeJS.Timeout
     let accumulatedDelta = 0
-    const SCROLL_THRESHOLD = 50 // Reduced threshold for more responsive scrolling
+    let lastScrollTime = 0
+    const SCROLL_THRESHOLD = 50
+    const SCROLL_COOLDOWN = 300 // Reduced cooldown time
     
     const handleScroll = (e: WheelEvent) => {
-      if (isScrolling || projects.length === 0) return
+      if (projects.length === 0) return
+      
+      const currentTime = Date.now()
+      
+      // Check if we're still in cooldown period
+      if (currentTime - lastScrollTime < SCROLL_COOLDOWN) {
+        e.preventDefault()
+        return
+      }
       
       e.preventDefault()
       accumulatedDelta += Math.abs(e.deltaY)
       
       if (accumulatedDelta > SCROLL_THRESHOLD) {
-        setIsScrolling(true)
+        lastScrollTime = currentTime
         accumulatedDelta = 0
         
         if (e.deltaY > 0 && currentIndex < projects.length - 1) {
@@ -107,30 +117,41 @@ export default function BrowseScreen() {
           setCurrentIndex(prev => prev - 1)
         }
         
-        // Reset scrolling state after animation
+        // Clear any existing timeout
+        clearTimeout(scrollTimeout)
+        
+        // Reset the cooldown after a short delay
         scrollTimeout = setTimeout(() => {
-          setIsScrolling(false)
-        }, 500) // Reduced timeout for smoother experience
+          // This timeout is just for cleanup, not for blocking
+        }, 100)
       }
     }
 
     // Handle touch events for mobile
     let touchStartY = 0
     let touchEndY = 0
+    let lastTouchTime = 0
     
     const handleTouchStart = (e: TouchEvent) => {
       touchStartY = e.touches[0].clientY
     }
     
     const handleTouchEnd = (e: TouchEvent) => {
-      if (isScrolling || projects.length === 0) return
+      if (projects.length === 0) return
+      
+      const currentTime = Date.now()
+      
+      // Check if we're still in cooldown period
+      if (currentTime - lastTouchTime < SCROLL_COOLDOWN) {
+        return
+      }
       
       touchEndY = e.changedTouches[0].clientY
       const deltaY = touchStartY - touchEndY
       const TOUCH_THRESHOLD = 50
       
       if (Math.abs(deltaY) > TOUCH_THRESHOLD) {
-        setIsScrolling(true)
+        lastTouchTime = currentTime
         
         if (deltaY > 0 && currentIndex < projects.length - 1) {
           // Swipe up - next project
@@ -139,8 +160,6 @@ export default function BrowseScreen() {
           // Swipe down - previous project
           setCurrentIndex(prev => prev - 1)
         }
-        
-        setTimeout(() => setIsScrolling(false), 500)
       }
     }
 
@@ -159,27 +178,35 @@ export default function BrowseScreen() {
       }
       clearTimeout(scrollTimeout)
     }
-  }, [currentIndex, projects.length, isScrolling])
+  }, [currentIndex, projects.length])
 
   // Handle keyboard navigation
   useEffect(() => {
+    let lastKeyTime = 0
+    const KEY_COOLDOWN = 300
+    
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isScrolling || projects.length === 0) return
+      if (projects.length === 0) return
+      
+      const currentTime = Date.now()
+      
+      // Check if we're still in cooldown period
+      if (currentTime - lastKeyTime < KEY_COOLDOWN) {
+        return
+      }
       
       if (e.key === 'ArrowDown' && currentIndex < projects.length - 1) {
-        setIsScrolling(true)
+        lastKeyTime = currentTime
         setCurrentIndex(prev => prev + 1)
-        setTimeout(() => setIsScrolling(false), 500)
       } else if (e.key === 'ArrowUp' && currentIndex > 0) {
-        setIsScrolling(true)
+        lastKeyTime = currentTime
         setCurrentIndex(prev => prev - 1)
-        setTimeout(() => setIsScrolling(false), 500)
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentIndex, projects.length, isScrolling])
+  }, [currentIndex, projects.length])
 
   useEffect(() => {
     fetchProjects()
@@ -432,10 +459,8 @@ export default function BrowseScreen() {
               }}
               transition={{ duration: 0.3 }}
               onClick={() => {
-                if (!isScrolling && index !== currentIndex) {
-                  setIsScrolling(true)
+                if (index !== currentIndex) {
                   setCurrentIndex(index)
-                  setTimeout(() => setIsScrolling(false), 600)
                 }
               }}
             />
@@ -445,7 +470,7 @@ export default function BrowseScreen() {
 
 
         {/* Navigation Hint - Only on First Project */}
-        {!isScrolling && currentIndex === 0 && (
+        {currentIndex === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
