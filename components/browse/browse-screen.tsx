@@ -18,6 +18,7 @@ import { TopNavigation } from "@/components/layout/top-navigation"
 import { useUser } from "@/contexts/user-context"
 import FabToggleRole from "@/components/ui/fab-toggle-role"
 import { motion, AnimatePresence } from "framer-motion"
+import AnalysisPanel from "./analysis-panel"
 
 interface Project {
   id: string
@@ -576,186 +577,14 @@ export default function BrowseScreen() {
       <FabToggleRole />
 
       {/* Analysis Panel */}
-      {showAnalysis && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden"
-          >
-            <div className="flex items-center justify-between p-6 border-b dark:border-gray-700">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
-                <BarChart3 className="w-6 h-6" />
-                Investment Analysis
-              </h2>
-              <button
-                onClick={handleCloseAnalysis}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
-              {loadingAnalysis ? (
-                <div className="p-12 text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-muted-foreground">Generating AI-powered analysis...</p>
-                  <p className="text-sm text-muted-foreground mt-2">This may take a few moments</p>
-                </div>
-              ) : analysisData?.error ? (
-                <div className="p-12 text-center">
-                  <div className="text-red-500 mb-4">⚠️ Analysis Error</div>
-                  <p className="text-muted-foreground">{analysisData.error}</p>
-                  <button
-                    onClick={() => handleShowAnalysis()}
-                    className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              ) : analysisData ? (
-                <div className="p-6 space-y-6">
-                  {/* Summary Section */}
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-lg">
-                    <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                      <Target className="w-5 h-5" />
-                      Investment Summary
-                    </h3>
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Overall Score</p>
-                        <p className="text-2xl font-bold text-blue-600">{analysisData.summary?.overallScore}/10</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Recommendation</p>
-                        <p className="font-semibold text-green-600">{analysisData.summary?.investmentRecommendation}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Key Highlights</p>
-                        <ul className="text-sm mt-1">
-                          {analysisData.summary?.keyHighlights?.slice(0, 2).map((highlight: string, idx: number) => (
-                            <li key={idx} className="text-gray-700 dark:text-gray-300">• {highlight}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Market Analysis */}
-                  <div className="border dark:border-gray-700 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold mb-4">Market Analysis</h3>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Market Size</p>
-                        <p className="font-semibold">{analysisData.marketAnalysis?.marketSize}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Growth Rate</p>
-                        <p className="font-semibold">{analysisData.marketAnalysis?.growthRate}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Target Audience</p>
-                      <p className="text-sm">{analysisData.marketAnalysis?.targetAudience}</p>
-                    </div>
-                  </div>
-
-                  {/* Competitor Analysis */}
-                  {analysisData.competitorAnalysis?.directCompetitors && (
-                    <div className="border dark:border-gray-700 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold mb-4">Competitive Landscape</h3>
-                      <div className="space-y-3">
-                        {analysisData.competitorAnalysis.directCompetitors.slice(0, 2).map((competitor: any, idx: number) => (
-                          <div key={idx} className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded">
-                            <h4 className="font-medium">{competitor.name}</h4>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Market Share: {competitor.marketShare}</p>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-4">
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Competitive Advantage</p>
-                        <p className="text-sm">{analysisData.competitorAnalysis?.competitiveAdvantage}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Financial Projection */}
-                  <div className="border dark:border-gray-700 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold mb-4">Financial Projections</h3>
-                    <div className="grid grid-cols-3 gap-4 mb-4">
-                      <div className="text-center">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Year 1</p>
-                        <p className="font-semibold">{analysisData.financialProjection?.revenueProjection?.year1}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Year 3</p>
-                        <p className="font-semibold">{analysisData.financialProjection?.revenueProjection?.year3}</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Year 5</p>
-                        <p className="font-semibold">{analysisData.financialProjection?.revenueProjection?.year5}</p>
-                      </div>
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Expected ROI</p>
-                        <p className="font-semibold text-green-600">{analysisData.investmentMetrics?.expectedROI}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Time to Exit</p>
-                        <p className="font-semibold">{analysisData.investmentMetrics?.timeToExit}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Risk Assessment */}
-                  <div className="border dark:border-gray-700 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      Risk Assessment
-                      <span className={`text-sm px-2 py-1 rounded ${
-                        analysisData.riskAssessment?.riskLevel === 'Low' ? 'bg-green-100 text-green-800' :
-                        analysisData.riskAssessment?.riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {analysisData.riskAssessment?.riskLevel} Risk
-                      </span>
-                    </h3>
-                    {analysisData.riskAssessment?.majorRisks?.slice(0, 2).map((risk: any, idx: number) => (
-                      <div key={idx} className="mb-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded">
-                        <p className="font-medium text-sm">{risk.risk}</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Mitigation: {risk.mitigation}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Next Steps */}
-                  <div className="border dark:border-gray-700 rounded-lg p-6">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Lightbulb className="w-5 h-5" />
-                      Next Steps
-                    </h3>
-                    <ul className="space-y-2">
-                      {analysisData.nextSteps?.map((step: string, idx: number) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-sm">{step}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-12 text-center">
-                  <p className="text-muted-foreground">No analysis data available</p>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        </div>
-      )}
+      <AnalysisPanel
+        isVisible={showAnalysis}
+        isLoading={loadingAnalysis}
+        analysisData={analysisData}
+        project={currentProject}
+        onClose={handleCloseAnalysis}
+        onRetry={() => handleShowAnalysis()}
+      />
     </div>
   )
 }
