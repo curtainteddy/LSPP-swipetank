@@ -20,9 +20,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
-      if (window.innerWidth >= 768) {
-        setSidebarOpen(false) // Close sidebar on desktop by default
-      }
+      // On desktop, don't automatically close sidebar
     }
 
     checkMobile()
@@ -46,9 +44,10 @@ export function AppLayout({ children }: AppLayoutProps) {
         isMobile={isMobile}
       />
 
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} isMobile={isMobile} />
+      {/* Sidebar is always visible on desktop, toggleable on mobile */}
+      <Sidebar isOpen={!isMobile || sidebarOpen} onClose={() => setSidebarOpen(false)} isMobile={isMobile} />
 
-      <main className="pt-16">{children}</main>
+      <main className={`${!isMobile ? 'ml-64' : ''} pt-16`}>{children}</main>
 
       <FabToggleRole />
     </div>

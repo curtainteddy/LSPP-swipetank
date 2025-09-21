@@ -13,6 +13,10 @@ import { Slider } from "@/components/ui/slider"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { AppLayout } from "@/components/layout/app-layout"
+import { Sidebar } from "@/components/layout/sidebar"
+import { TopNavigation } from "@/components/layout/top-navigation"
+import { useUser } from "@/contexts/user-context"
+import FabToggleRole from "@/components/ui/fab-toggle-role"
 import { motion, AnimatePresence } from "framer-motion"
 
 interface Project {
@@ -57,11 +61,23 @@ export default function BrowseScreen() {
   const [likedProjects, setLikedProjects] = useState<Set<string>>(new Set())
   const [isScrolling, setIsScrolling] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const { userType } = useUser()
   const [filters, setFilters] = useState({
     industry: "all",
     investmentType: "all",
     priceRange: [0, 10000],
   })
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
 
   useEffect(() => {
     fetchProjects()
@@ -256,13 +272,24 @@ export default function BrowseScreen() {
   }
 
   return (
-    <AppLayout>
+    <div className="min-h-screen bg-background">
+      {/* Top Navigation */}
+      <TopNavigation
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        userRole={userType === "innovator" ? "innovator" : "investor"}
+        isMobile={isMobile}
+      />
+
+      {/* Sidebar - Always visible on desktop */}
+      <Sidebar isOpen={!isMobile || sidebarOpen} onClose={() => setSidebarOpen(false)} isMobile={isMobile} />
+      
       <div 
         ref={containerRef}
         className="min-h-screen overflow-hidden relative"
       >
         {/* Full Screen Project Display */}
-        <div className="fixed inset-0 left-0 md:left-64"> {/* Account for sidebar on desktop */}
+        <div className="fixed inset-0 left-0 md:left-64 top-0"> {/* Account for sidebar on desktop */}
           <AnimatePresence mode="wait">
             {currentProject && (
               <motion.div
@@ -392,28 +419,30 @@ export default function BrowseScreen() {
           {projects.map((_, index) => (
             <motion.div
               key={index}
-              className={`w-1 h-6 rounded-full transition-all duration-300 ${
+              className={`w-1 h-6 rounded-full transition-all duration-300 cursor-pointer ${
                 index === currentIndex 
                   ? 'bg-white shadow-lg' 
                   : index < currentIndex 
-                    ? 'bg-white/60' 
-                    : 'bg-white/30'
+                    ? 'bg-white/60 hover:bg-white/80' 
+                    : 'bg-white/30 hover:bg-white/50'
               }`}
               animate={{
                 scale: index === currentIndex ? 1.5 : 1,
                 width: index === currentIndex ? 8 : 4
               }}
               transition={{ duration: 0.3 }}
+              onClick={() => {
+                if (!isScrolling && index !== currentIndex) {
+                  setIsScrolling(true)
+                  setCurrentIndex(index)
+                  setTimeout(() => setIsScrolling(false), 600)
+                }
+              }}
             />
           ))}
         </div>
 
-        {/* Project Counter - Top Center */}
-        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 md:left-auto md:right-24 md:transform-none">
-          <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-3 py-1">
-            {currentIndex + 1} / {projects.length}
-          </Badge>
-        </div>
+
 
         {/* Navigation Hint - Only on First Project */}
         {!isScrolling && currentIndex === 0 && (
@@ -421,7 +450,7 @@ export default function BrowseScreen() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed bottom-8 left-1/2 transform -translate-x-1/2 text-white text-center z-50"
+            className="fixed bottom-8 left-1/2 transform -translate-x-1/2 text-white text-center z-40 pointer-events-none"
           >
             <motion.div
               animate={{ y: [0, 8, 0] }}
@@ -434,6 +463,9 @@ export default function BrowseScreen() {
           </motion.div>
         )}
       </div>
-    </AppLayout>
+      
+      {/* FAB for role switching */}
+      <FabToggleRole />
+    </div>
   )
 }
