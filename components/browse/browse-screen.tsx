@@ -67,38 +67,79 @@ export default function BrowseScreen() {
     fetchProjects()
   }, [])
 
-  // Handle scroll to navigate between projects
+  // Handle smooth scroll navigation like Instagram reels
   useEffect(() => {
     let scrollTimeout: NodeJS.Timeout
+    let accumulatedDelta = 0
+    const SCROLL_THRESHOLD = 50 // Reduced threshold for more responsive scrolling
     
     const handleScroll = (e: WheelEvent) => {
       if (isScrolling || projects.length === 0) return
       
       e.preventDefault()
-      setIsScrolling(true)
+      accumulatedDelta += Math.abs(e.deltaY)
       
-      if (e.deltaY > 0 && currentIndex < projects.length - 1) {
-        // Scroll down - next project
-        setCurrentIndex(prev => prev + 1)
-      } else if (e.deltaY < 0 && currentIndex > 0) {
-        // Scroll up - previous project
-        setCurrentIndex(prev => prev - 1)
+      if (accumulatedDelta > SCROLL_THRESHOLD) {
+        setIsScrolling(true)
+        accumulatedDelta = 0
+        
+        if (e.deltaY > 0 && currentIndex < projects.length - 1) {
+          // Scroll down - next project
+          setCurrentIndex(prev => prev + 1)
+        } else if (e.deltaY < 0 && currentIndex > 0) {
+          // Scroll up - previous project
+          setCurrentIndex(prev => prev - 1)
+        }
+        
+        // Reset scrolling state after animation
+        scrollTimeout = setTimeout(() => {
+          setIsScrolling(false)
+        }, 500) // Reduced timeout for smoother experience
       }
+    }
+
+    // Handle touch events for mobile
+    let touchStartY = 0
+    let touchEndY = 0
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY
+    }
+    
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (isScrolling || projects.length === 0) return
       
-      // Reset scrolling state after animation
-      scrollTimeout = setTimeout(() => {
-        setIsScrolling(false)
-      }, 800)
+      touchEndY = e.changedTouches[0].clientY
+      const deltaY = touchStartY - touchEndY
+      const TOUCH_THRESHOLD = 50
+      
+      if (Math.abs(deltaY) > TOUCH_THRESHOLD) {
+        setIsScrolling(true)
+        
+        if (deltaY > 0 && currentIndex < projects.length - 1) {
+          // Swipe up - next project
+          setCurrentIndex(prev => prev + 1)
+        } else if (deltaY < 0 && currentIndex > 0) {
+          // Swipe down - previous project
+          setCurrentIndex(prev => prev - 1)
+        }
+        
+        setTimeout(() => setIsScrolling(false), 500)
+      }
     }
 
     const container = containerRef.current
     if (container) {
       container.addEventListener('wheel', handleScroll, { passive: false })
+      container.addEventListener('touchstart', handleTouchStart, { passive: true })
+      container.addEventListener('touchend', handleTouchEnd, { passive: true })
     }
 
     return () => {
       if (container) {
         container.removeEventListener('wheel', handleScroll)
+        container.removeEventListener('touchstart', handleTouchStart)
+        container.removeEventListener('touchend', handleTouchEnd)
       }
       clearTimeout(scrollTimeout)
     }
@@ -112,11 +153,11 @@ export default function BrowseScreen() {
       if (e.key === 'ArrowDown' && currentIndex < projects.length - 1) {
         setIsScrolling(true)
         setCurrentIndex(prev => prev + 1)
-        setTimeout(() => setIsScrolling(false), 800)
+        setTimeout(() => setIsScrolling(false), 500)
       } else if (e.key === 'ArrowUp' && currentIndex > 0) {
         setIsScrolling(true)
         setCurrentIndex(prev => prev - 1)
-        setTimeout(() => setIsScrolling(false), 800)
+        setTimeout(() => setIsScrolling(false), 500)
       }
     }
 
@@ -220,233 +261,178 @@ export default function BrowseScreen() {
         ref={containerRef}
         className="min-h-screen overflow-hidden relative"
       >
-        {/* Fixed Header */}
-        <div className="fixed top-16 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <div className="flex items-center gap-4">
-              <h1 className="text-lg font-semibold">Browse Projects</h1>
-              <Badge variant="outline" className="text-xs">
-                {currentIndex + 1} of {projects.length}
-              </Badge>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Input
-                placeholder="Search projects..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-48"
-              />
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <Filter className="h-4 w-4" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent>
-                  <SheetHeader>
-                    <SheetTitle>Filter Projects</SheetTitle>
-                    <SheetDescription>
-                      Narrow down your search with these filters
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="space-y-6 mt-6">
-                    <div>
-                      <Label>Industry</Label>
-                      <Select value={filters.industry} onValueChange={(value) => setFilters(prev => ({ ...prev, industry: value }))}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Industries</SelectItem>
-                          <SelectItem value="technology">Technology</SelectItem>
-                          <SelectItem value="healthcare">Healthcare</SelectItem>
-                          <SelectItem value="finance">Finance</SelectItem>
-                          <SelectItem value="education">Education</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <Label>Price Range: ${filters.priceRange[0]} - ${filters.priceRange[1]}</Label>
-                      <Slider
-                        value={filters.priceRange}
-                        onValueChange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}
-                        max={10000}
-                        step={100}
-                        className="mt-2"
-                      />
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-          </div>
-        </div>
-
-        {/* Project Display Area */}
-        <div className="pt-24 min-h-screen flex items-center justify-center">
+        {/* Full Screen Project Display */}
+        <div className="fixed inset-0 left-0 md:left-64"> {/* Account for sidebar on desktop */}
           <AnimatePresence mode="wait">
             {currentProject && (
               <motion.div
                 key={currentProject.id}
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -50 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="w-full max-w-4xl mx-auto px-4"
+                initial={{ opacity: 0, scale: 1.1 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ 
+                  duration: 0.6, 
+                  ease: [0.25, 0.46, 0.45, 0.94]
+                }}
+                className="w-full h-full relative"
               >
-                <Card className="overflow-hidden shadow-2xl">
-                  {/* Project Image */}
-                  <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-                    {currentProject.images.length > 0 ? (
-                      <img
-                        src={currentProject.images.find(img => img.isPrimary)?.url || currentProject.images[0]?.url || "/placeholder.svg"}
-                        alt={currentProject.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <div className="text-gray-400 text-8xl">📦</div>
-                      </div>
-                    )}
-                    
-                    {/* Like Button */}
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="absolute top-6 right-6 h-12 w-12 rounded-full bg-white/90 hover:bg-white shadow-lg"
-                      onClick={() => handleLike(currentProject.id)}
-                    >
-                      <Heart 
-                        className={`h-6 w-6 ${likedProjects.has(currentProject.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
-                      />
-                    </Button>
-
-                    {/* Status Badge */}
-                    <Badge className="absolute top-6 left-6 bg-green-500 text-white text-sm px-3 py-1">
-                      Published
-                    </Badge>
-                  </div>
-
-                  <CardContent className="p-8">
-                    {/* Title and Inventor */}
-                    <div className="mb-6">
-                      <h2 className="text-3xl font-bold mb-3">{currentProject.title}</h2>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={currentProject.inventor.profileImage || "/placeholder-user.jpg"} />
-                          <AvatarFallback>
-                            {currentProject.inventor.name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{currentProject.inventor.name}</p>
-                          <p className="text-sm text-muted-foreground">{currentProject.inventor.email}</p>
-                        </div>
-                      </div>
+                {/* Background Image - Full Screen */}
+                <div className="absolute inset-0">
+                  {currentProject.images.length > 0 ? (
+                    <img
+                      src={currentProject.images.find(img => img.isPrimary)?.url || currentProject.images[0]?.url || "/placeholder.svg"}
+                      alt={currentProject.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                      <div className="text-gray-400 text-8xl">📦</div>
                     </div>
+                  )}
+                </div>
 
-                    {/* Description */}
-                    <div className="mb-6">
-                      <p className="text-muted-foreground leading-relaxed">
-                        {currentProject.description}
-                      </p>
+                {/* Dark Overlay for Text Readability */}
+                <div className="absolute inset-0 bg-black/20" />
+
+                {/* Bottom Content Overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                  <div className="max-w-2xl">
+                    {/* Title */}
+                    <h1 className="text-white text-2xl md:text-3xl font-bold mb-4 leading-tight">
+                      {currentProject.title}
+                    </h1>
+
+                    {/* Creator Info */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <Avatar className="h-10 w-10 border-2 border-white/50">
+                        <AvatarImage src={currentProject.inventor.profileImage || "/placeholder-user.jpg"} />
+                        <AvatarFallback className="bg-white/20 text-white">
+                          {currentProject.inventor.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-white font-medium">
+                          {currentProject.inventor.name}
+                        </p>
+                        <p className="text-white/70 text-sm">
+                          Creator
+                        </p>
+                      </div>
                     </div>
 
                     {/* Tags */}
                     {currentProject.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-6">
-                        {currentProject.tags.map((tagWrapper) => (
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {currentProject.tags.slice(0, 4).map((tagWrapper) => (
                           <Badge 
                             key={tagWrapper.tag.id} 
-                            variant="secondary" 
-                            className="px-3 py-1"
+                            className="bg-white/20 text-white border-white/30 hover:bg-white/30"
                           >
-                            {tagWrapper.tag.name}
+                            #{tagWrapper.tag.name}
                           </Badge>
                         ))}
+                        {currentProject.tags.length > 4 && (
+                          <Badge className="bg-white/20 text-white border-white/30">
+                            +{currentProject.tags.length - 4} more
+                          </Badge>
+                        )}
                       </div>
                     )}
 
-                    {/* Stats and Price */}
-                    <div className="flex items-center justify-between mb-8">
-                      <div className="text-2xl font-bold text-primary">
-                        {formatPrice(currentProject.price)}
+                    {/* Stats Row */}
+                    <div className="flex items-center gap-6 text-white">
+                      <div className="flex items-center gap-2">
+                        <Heart className="h-5 w-5" />
+                        <span className="font-medium">{currentProject._count.likes} likes</span>
                       </div>
-                      <div className="flex items-center gap-6 text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <Heart className="h-5 w-5" />
-                          <span className="font-medium">{currentProject._count.likes} likes</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="h-5 w-5" />
-                          <span className="font-medium">{currentProject._count.investments} investments</span>
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5" />
+                        <span className="font-medium">{currentProject._count.investments} investments</span>
                       </div>
                     </div>
+                  </div>
+                </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-4">
-                      <Button 
-                        size="lg" 
-                        className="flex-1"
-                        onClick={() => router.push(`/projects/${currentProject.id}`)}
-                      >
-                        <Eye className="h-5 w-5 mr-2" />
-                        View Full Details
-                      </Button>
-                      <Button 
-                        size="lg" 
-                        variant="outline"
-                        onClick={() => handleMessage(currentProject.id)}
-                      >
-                        <MessageCircle className="h-5 w-5 mr-2" />
-                        Contact Inventor
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* Top Right Actions */}
+                <div className="absolute top-6 right-6 flex gap-3">
+                  {/* Like Button */}
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleLike(currentProject.id)}
+                    className="p-3 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
+                  >
+                    <Heart 
+                      className={`h-6 w-6 ${likedProjects.has(currentProject.id) ? 'fill-red-500 text-red-500' : 'text-white'}`} 
+                    />
+                  </motion.button>
+
+                  {/* Message Button */}
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleMessage(currentProject.id)}
+                    className="p-3 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors"
+                  >
+                    <MessageCircle className="h-6 w-6 text-white" />
+                  </motion.button>
+                </div>
+
+                {/* Top Left Status */}
+                <div className="absolute top-6 left-6">
+                  <Badge className="bg-green-500/90 text-white border-0 px-3 py-1">
+                    Published
+                  </Badge>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Navigation Indicators */}
-        <div className="fixed bottom-8 right-8 flex flex-col items-center gap-4">
-          {/* Scroll Hint */}
-          {!isScrolling && (
+        {/* Navigation Indicators - Right Side */}
+        <div className="fixed right-6 top-1/2 transform -translate-y-1/2 flex flex-col gap-2 z-50">
+          {projects.map((_, index) => (
             <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="text-muted-foreground text-sm text-center"
+              key={index}
+              className={`w-1 h-6 rounded-full transition-all duration-300 ${
+                index === currentIndex 
+                  ? 'bg-white shadow-lg' 
+                  : index < currentIndex 
+                    ? 'bg-white/60' 
+                    : 'bg-white/30'
+              }`}
+              animate={{
+                scale: index === currentIndex ? 1.5 : 1,
+                width: index === currentIndex ? 8 : 4
+              }}
+              transition={{ duration: 0.3 }}
+            />
+          ))}
+        </div>
+
+        {/* Project Counter - Top Center */}
+        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 md:left-auto md:right-24 md:transform-none">
+          <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-3 py-1">
+            {currentIndex + 1} / {projects.length}
+          </Badge>
+        </div>
+
+        {/* Navigation Hint - Only on First Project */}
+        {!isScrolling && currentIndex === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed bottom-8 left-1/2 transform -translate-x-1/2 text-white text-center z-50"
+          >
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              className="mb-2"
             >
-              <ChevronDown className="h-6 w-6 mx-auto mb-1" />
-              <p>Scroll to browse</p>
+              <ChevronDown className="h-6 w-6 mx-auto drop-shadow-lg" />
             </motion.div>
-          )}
-
-          {/* Progress Indicator */}
-          <div className="flex flex-col gap-2">
-            {projects.map((_, index) => (
-              <div
-                key={index}
-                className={`w-2 h-8 rounded-full transition-colors duration-300 ${
-                  index === currentIndex 
-                    ? 'bg-primary' 
-                    : index < currentIndex 
-                      ? 'bg-primary/40' 
-                      : 'bg-gray-200'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Keyboard Shortcuts Helper */}
-        <div className="fixed bottom-8 left-8 text-xs text-muted-foreground">
-          <p>Use ↑↓ arrow keys or scroll to navigate</p>
-        </div>
+            <p className="text-sm drop-shadow-lg font-medium">Scroll for next project</p>
+          </motion.div>
+        )}
       </div>
     </AppLayout>
   )
