@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { AppLayout } from "@/components/layout/app-layout"
+import { AppLayout } from "@/components/layout/app-layout-airbnb"
 import { motion } from "framer-motion"
 
 const analyticsData = {
@@ -88,7 +88,7 @@ export default function AnalyticsScreen() {
   )
 
   return (
-    <AppLayout userRole="innovator">
+    <AppLayout>
       <div className="p-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
