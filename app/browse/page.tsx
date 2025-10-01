@@ -1,5 +1,5 @@
-import BrowseScreen from "@/components/browse/browse-screen"
+import SwipeBrowseScreen from "@/components/browse/swipe-browse-screen"
 
 export default function Browse() {
-  return <BrowseScreen />
+  return <SwipeBrowseScreen />
 }
