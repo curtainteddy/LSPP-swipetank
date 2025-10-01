@@ -1,441 +1,400 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BarChart3, Target, Lightbulb, X, ArrowLeft, TrendingUp, DollarSign, Users, AlertTriangle, CheckCircle } from "lucide-react"
+import { X, ChevronLeft, Sparkles, TrendingUp, Users, DollarSign, AlertTriangle, CheckCircle, RefreshCw, BookOpen, BarChart3 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
-interface AnalysisData {
-  summary?: {
-    overallScore: number
-    investmentRecommendation: string
-    keyHighlights: string[]
-  }
-  marketAnalysis?: {
-    marketSize: string
-    growthRate: string
-    marketTrend: string
-    targetAudience: string
-    barriers: string[]
-  }
-  competitorAnalysis?: {
-    directCompetitors: Array<{
-      name: string
-      marketShare: string
-      strengths: string[]
-      weaknesses: string[]
-    }>
-    competitiveAdvantage: string
-    threats: string[]
-  }
-  financialProjection?: {
-    revenueProjection: {
-      year1: string
-      year3: string
-      year5: string
-    }
-    profitabilityTimeline: string
-    fundingNeeded: string
-    useOfFunds: string[]
-  }
-  riskAssessment?: {
-    riskLevel: 'Low' | 'Medium' | 'High'
-    majorRisks: Array<{
-      risk: string
-      impact: string
-      mitigation: string
-    }>
-  }
-  investmentMetrics?: {
-    expectedROI: string
-    timeToExit: string
-    valuationMultiple: string
-    comparableDeals: string
-  }
-  nextSteps?: string[]
-  error?: string
-}
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
 
 interface Project {
   id: string
   title: string
   description: string
-  price?: number | null
-  tags: Array<{ tag: { name: string } }>
+  price: number | null
+  status: string
+  createdAt: string
+  updatedAt: string
   inventor: {
+    id: string
     name: string
-    profileImage?: string | null
+    email: string
+    profileImage: string | null
   }
-  images: Array<{ url: string; isPrimary: boolean }>
+  images: Array<{
+    id: string
+    url: string
+    isPrimary: boolean
+    order: number
+  }>
+  tags: Array<{
+    tag: {
+      id: string
+      name: string
+      color: string | null
+    }
+  }>
+  _count: {
+    likes: number
+    investments: number
+  }
 }
 
 interface AnalysisPanelProps {
   isVisible: boolean
   isLoading: boolean
-  analysisData: AnalysisData | null
-  project: Project
+  analysisData: any
+  project: Project | null
   onClose: () => void
-  onRetry: () => void
-  cached?: boolean
+  onRetry: () => Promise<void>
+  cached: boolean
 }
 
-export default function AnalysisPanel({
-  isVisible,
-  isLoading,
-  analysisData,
-  project,
-  onClose,
-  onRetry,
-  cached = false
+export function AnalysisPanel({ 
+  isVisible, 
+  isLoading, 
+  analysisData, 
+  project, 
+  onClose, 
+  onRetry, 
+  cached 
 }: AnalysisPanelProps) {
-  if (!isVisible) return null
+  if (!project) return null
+
+  const projectImage = project.images.find(img => img.isPrimary)?.url || project.images[0]?.url
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-600"
+    if (score >= 60) return "text-yellow-600"
+    return "text-red-600"
+  }
+
+  const getScoreBgColor = (score: number) => {
+    if (score >= 80) return "bg-green-100"
+    if (score >= 60) return "bg-yellow-100"
+    return "bg-red-100"
+  }
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ x: '100%' }}
-        animate={{ x: 0 }}
-        exit={{ x: '100%' }}
-        transition={{ 
-          type: "spring",
-          damping: 25,
-          stiffness: 200,
-          duration: 0.6
-        }}
-        className="fixed inset-0 z-50"
-      >
-        {/* Background Image - Same as project */}
-        <div className="absolute inset-0">
-          {project.images.length > 0 ? (
-            <img
-              src={project.images.find(img => img.isPrimary)?.url || project.images[0]?.url || "/placeholder.svg"}
-              alt={project.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-              <div className="text-gray-400 text-8xl">📦</div>
-            </div>
-          )}
-        </div>
-
-        {/* Dark Overlay for Content Readability */}
-        <div className="absolute inset-0 bg-black/70" />
-
-        {/* Top Navigation Bar */}
-        <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/60 to-transparent">
-          <div className="flex items-center justify-between p-6">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="flex items-center gap-2 text-white">
-                <BarChart3 className="h-6 w-6" />
-                <h1 className="text-xl font-semibold">Investment Analysis</h1>
-                {cached && (
-                  <div className="ml-2 px-2 py-1 bg-green-500/20 border border-green-400/30 rounded-full text-xs text-green-300">
-                    Cached
-                  </div>
-                )}
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          
-          {/* Project Info Strip - Overlay Style */}
-          <div className="px-6 pb-4">
-            <div className="flex items-center gap-4 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
-              <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/10">
-                {project.images.length > 0 ? (
-                  <img
-                    src={project.images.find(img => img.isPrimary)?.url || project.images[0]?.url || "/placeholder.svg"}
-                    alt={project.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white/60">
-                    📦
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold truncate text-white">{project.title}</h3>
-                <p className="text-sm text-white/70">by {project.inventor.name}</p>
-              </div>
-              {project.price && (
-                <div className="text-right">
-                  <p className="text-sm text-white/70">Valuation</p>
-                  <p className="font-semibold text-white">${project.price.toLocaleString()}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Scrollable Content Area */}
-        <div className="absolute inset-0 pt-32 overflow-y-auto">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center p-12 text-center min-h-[400px]">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-12 h-12 border-4 border-white border-t-transparent rounded-full mb-4"
-              />
-              <h3 className="text-xl font-semibold mb-2 text-white">
-                {cached ? "Loading Cached Analysis" : "Generating AI Analysis"}
-              </h3>
-              <p className="text-white/70 mb-1">
-                {cached ? "Retrieving saved analysis..." : "Analyzing market conditions..."}
-              </p>
-              {!cached && (
-                <p className="text-sm text-white/60">This may take a few moments</p>
-              )}
-            </div>
-          ) : analysisData?.error ? (
-            <div className="flex flex-col items-center justify-center p-12 text-center min-h-[400px]">
-              <AlertTriangle className="w-16 h-16 text-red-400 mb-4" />
-              <h3 className="text-xl font-semibold mb-2 text-white">Analysis Failed</h3>
-              <p className="text-white/70 mb-4">{analysisData.error}</p>
-              <Button onClick={onRetry} className="gap-2 bg-white/20 hover:bg-white/30 text-white border-white/30">
-                <BarChart3 className="w-4 h-4" />
-                Try Again
-              </Button>
-            </div>
-          ) : analysisData ? (
-            <div className="p-6 space-y-6 pb-12">
-              {/* Investment Summary - Hero Style */}
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <Target className="w-6 h-6 text-white" />
-                  <h3 className="text-2xl font-bold text-white">Investment Summary</h3>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center p-6 bg-white/10 rounded-xl border border-white/20">
-                    <p className="text-sm text-white/70 mb-2">Overall Score</p>
-                    <div className="flex items-center justify-center gap-1">
-                      <span className="text-4xl font-bold text-white">
-                        {analysisData.summary?.overallScore}
-                      </span>
-                      <span className="text-xl text-white/60">/10</span>
-                    </div>
-                  </div>
-                  <div className="text-center p-6 bg-white/10 rounded-xl border border-white/20">
-                    <p className="text-sm text-white/70 mb-2">Recommendation</p>
-                    <Badge 
-                      className={`text-sm px-4 py-2 ${
-                        analysisData.summary?.investmentRecommendation?.includes('Strong') ? 'bg-green-500/80 text-white border-green-400/50' :
-                        analysisData.summary?.investmentRecommendation?.includes('Buy') ? 'bg-blue-500/80 text-white border-blue-400/50' :
-                        analysisData.summary?.investmentRecommendation?.includes('Hold') ? 'bg-yellow-500/80 text-white border-yellow-400/50' :
-                        'bg-red-500/80 text-white border-red-400/50'
-                      }`}
-                    >
-                      {analysisData.summary?.investmentRecommendation}
-                    </Badge>
-                  </div>
-                  <div className="p-6 bg-white/10 rounded-xl border border-white/20">
-                    <p className="text-sm text-white/70 mb-3">Key Highlights</p>
-                    <div className="space-y-2">
-                      {analysisData.summary?.keyHighlights?.slice(0, 2).map((highlight, idx) => (
-                        <div key={idx} className="flex items-start gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-white/90 leading-relaxed">{highlight}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Market Analysis */}
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                  <h3 className="text-xl font-bold text-white">Market Analysis</h3>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                  <div className="p-4 bg-white/5 rounded-xl">
-                    <p className="text-sm font-medium text-white/70 mb-1">Market Size</p>
-                    <p className="text-lg font-semibold text-white">{analysisData.marketAnalysis?.marketSize}</p>
-                  </div>
-                  <div className="p-4 bg-white/5 rounded-xl">
-                    <p className="text-sm font-medium text-white/70 mb-1">Growth Rate</p>
-                    <p className="text-lg font-semibold text-green-400">{analysisData.marketAnalysis?.growthRate}</p>
-                  </div>
-                </div>
-                
-                <div className="p-4 bg-white/5 rounded-xl">
-                  <p className="text-sm font-medium text-white/70 mb-2">Target Audience</p>
-                  <p className="text-sm leading-relaxed text-white/90">{analysisData.marketAnalysis?.targetAudience}</p>
-                </div>
-              </div>
-
-              {/* Financial Projections */}
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <DollarSign className="w-6 h-6 text-white" />
-                  <h3 className="text-xl font-bold text-white">Financial Projections</h3>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="text-center p-4 bg-white/5 rounded-xl">
-                    <p className="text-sm text-white/70 mb-1">Year 1</p>
-                    <p className="font-semibold text-white">{analysisData.financialProjection?.revenueProjection?.year1}</p>
-                  </div>
-                  <div className="text-center p-4 bg-white/5 rounded-xl">
-                    <p className="text-sm text-white/70 mb-1">Year 3</p>
-                    <p className="font-semibold text-white">{analysisData.financialProjection?.revenueProjection?.year3}</p>
-                  </div>
-                  <div className="text-center p-4 bg-white/5 rounded-xl">
-                    <p className="text-sm text-white/70 mb-1">Year 5</p>
-                    <p className="font-semibold text-white">{analysisData.financialProjection?.revenueProjection?.year5}</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-white/5 rounded-xl">
-                    <p className="text-sm font-medium text-white/70 mb-1">Expected ROI</p>
-                    <p className="text-lg font-semibold text-green-400">{analysisData.investmentMetrics?.expectedROI}</p>
-                  </div>
-                  <div className="p-4 bg-white/5 rounded-xl">
-                    <p className="text-sm font-medium text-white/70 mb-1">Time to Exit</p>
-                    <p className="text-lg font-semibold text-white">{analysisData.investmentMetrics?.timeToExit}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Competitive Analysis */}
-              {analysisData.competitorAnalysis?.directCompetitors && (
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Users className="w-6 h-6 text-white" />
-                    <h3 className="text-xl font-bold text-white">Competitive Landscape</h3>
-                  </div>
-                  
-                  <div className="space-y-4 mb-4">
-                    {analysisData.competitorAnalysis.directCompetitors.slice(0, 3).map((competitor, idx) => (
-                      <div key={idx} className="p-4 bg-white/5 rounded-xl">
-                        <div className="flex justify-between items-start mb-3">
-                          <h4 className="font-medium text-white">{competitor.name}</h4>
-                          <Badge variant="outline" className="border-white/30 text-white/70">
-                            {competitor.marketShare}
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <p className="font-medium text-green-400 mb-2">Strengths:</p>
-                            <ul className="space-y-1">
-                              {competitor.strengths?.slice(0, 2).map((strength, i) => (
-                                <li key={i} className="text-white/70">• {strength}</li>
-                              ))}
-                            </ul>
-                          </div>
-                          <div>
-                            <p className="font-medium text-red-400 mb-2">Weaknesses:</p>
-                            <ul className="space-y-1">
-                              {competitor.weaknesses?.slice(0, 2).map((weakness, i) => (
-                                <li key={i} className="text-white/70">• {weakness}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="p-4 bg-blue-500/20 border border-blue-400/30 rounded-xl">
-                    <p className="font-medium text-blue-200 mb-2">Competitive Advantage</p>
-                    <p className="text-sm text-blue-100">{analysisData.competitorAnalysis?.competitiveAdvantage}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Risk Assessment */}
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <AlertTriangle className="w-6 h-6 text-white" />
-                  <h3 className="text-xl font-bold text-white">Risk Assessment</h3>
-                  <Badge 
-                    className={`ml-2 ${
-                      analysisData.riskAssessment?.riskLevel === 'Low' ? 'bg-green-500/80 text-white border-green-400/50' :
-                      analysisData.riskAssessment?.riskLevel === 'Medium' ? 'bg-yellow-500/80 text-white border-yellow-400/50' :
-                      'bg-red-500/80 text-white border-red-400/50'
-                    }`}
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="absolute right-0 top-0 h-full w-full max-w-4xl bg-white shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
+              <div className="flex items-center justify-between p-6">
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onClose}
+                    className="rounded-full hover:bg-gray-100 w-8 h-8"
                   >
-                    {analysisData.riskAssessment?.riskLevel} Risk
-                  </Badge>
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
+                  <div>
+                    <h1 className="text-2xl font-semibold text-gray-900">
+                      AI Analysis
+                    </h1>
+                    <p className="text-sm text-gray-600">{project.title}</p>
+                  </div>
                 </div>
                 
-                <div className="space-y-4">
-                  {analysisData.riskAssessment?.majorRisks?.slice(0, 3).map((risk, idx) => (
-                    <div key={idx} className="p-4 bg-white/5 rounded-xl">
-                      <div className="flex items-start gap-3">
-                        <Badge 
-                          className={`mt-0.5 ${
-                            risk.impact === 'High' ? 'bg-red-500/80 text-white' :
-                            risk.impact === 'Medium' ? 'bg-yellow-500/80 text-white' :
-                            'bg-gray-500/80 text-white'
-                          }`}
-                        >
-                          {risk.impact}
-                        </Badge>
-                        <div className="flex-1">
-                          <p className="font-medium mb-2 text-white">{risk.risk}</p>
-                          <p className="text-sm text-white/70">
-                            <span className="font-medium text-white/90">Mitigation:</span> {risk.mitigation}
-                          </p>
+                <div className="flex items-center gap-2">
+                  {cached && (
+                    <Badge variant="secondary" className="text-xs">
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      Cached
+                    </Badge>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onRetry}
+                    disabled={isLoading}
+                    className="rounded-lg"
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="h-full overflow-y-auto pb-20">
+              {isLoading && (
+                <div className="flex items-center justify-center h-96">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-base text-gray-600">Analyzing project...</p>
+                    <p className="text-sm text-gray-500 mt-1">This may take a few moments</p>
+                  </div>
+                </div>
+              )}
+
+              {analysisData?.error && (
+                <div className="p-6">
+                  <Card className="border-red-200 bg-red-50">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle className="h-5 w-5 text-red-600" />
+                        <div>
+                          <p className="text-sm font-medium text-red-900">Analysis Failed</p>
+                          <p className="text-xs text-red-700 mt-1">{analysisData.error}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {analysisData && !analysisData.error && (
+                <div className="p-6 space-y-8">
+                  {/* Project Header */}
+                  <div className="flex items-start gap-6">
+                    {projectImage && (
+                      <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                        <img
+                          src={projectImage}
+                          alt={project.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                        {project.title}
+                      </h2>
+                      <div className="flex items-center gap-4">
+                        <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getScoreBgColor(analysisData.overallScore || 75)}`}>
+                          <BarChart3 className="h-4 w-4 mr-2" />
+                          <span className={getScoreColor(analysisData.overallScore || 75)}>
+                            {analysisData.overallScore || 75}% Overall Score
+                          </span>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
 
-              {/* Next Steps */}
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <Lightbulb className="w-6 h-6 text-white" />
-                  <h3 className="text-xl font-bold text-white">Recommended Next Steps</h3>
-                </div>
-                
-                <div className="space-y-3">
-                  {analysisData.nextSteps?.map((step, idx) => (
-                    <div key={idx} className="flex items-start gap-4 p-4 bg-white/5 rounded-xl">
-                      <div className="w-7 h-7 rounded-full bg-white/20 text-white flex items-center justify-center text-sm font-bold mt-0.5 flex-shrink-0">
-                        {idx + 1}
+                  {/* Key Metrics Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-sm font-medium text-gray-700">Market Potential</h3>
+                          <TrendingUp className="h-5 w-5 text-blue-500" />
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-2xl font-bold text-gray-900">
+                            {analysisData.marketPotential || 82}%
+                          </div>
+                          <Progress value={analysisData.marketPotential || 82} className="h-2" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-sm font-medium text-gray-700">Technical Feasibility</h3>
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-2xl font-bold text-gray-900">
+                            {analysisData.technicalFeasibility || 78}%
+                          </div>
+                          <Progress value={analysisData.technicalFeasibility || 78} className="h-2" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-sm font-medium text-gray-700">Competitive Edge</h3>
+                          <Users className="h-5 w-5 text-purple-500" />
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-2xl font-bold text-gray-900">
+                            {analysisData.competitiveAdvantage || 71}%
+                          </div>
+                          <Progress value={analysisData.competitiveAdvantage || 71} className="h-2" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* SWOT Analysis */}
+                  {(analysisData.strengths || analysisData.weaknesses || analysisData.opportunities || analysisData.threats) && (
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-6">SWOT Analysis</h3>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {analysisData.strengths && (
+                          <Card className="border-green-200 bg-green-50">
+                            <CardHeader>
+                              <CardTitle className="text-green-800 text-lg">Strengths</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <ul className="space-y-2">
+                                {analysisData.strengths.map((strength: string, index: number) => (
+                                  <li key={index} className="flex items-start gap-2 text-sm text-green-700">
+                                    <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                    {strength}
+                                  </li>
+                                ))}
+                              </ul>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {analysisData.weaknesses && (
+                          <Card className="border-red-200 bg-red-50">
+                            <CardHeader>
+                              <CardTitle className="text-red-800 text-lg">Weaknesses</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <ul className="space-y-2">
+                                {analysisData.weaknesses.map((weakness: string, index: number) => (
+                                  <li key={index} className="flex items-start gap-2 text-sm text-red-700">
+                                    <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                    {weakness}
+                                  </li>
+                                ))}
+                              </ul>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {analysisData.opportunities && (
+                          <Card className="border-blue-200 bg-blue-50">
+                            <CardHeader>
+                              <CardTitle className="text-blue-800 text-lg">Opportunities</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <ul className="space-y-2">
+                                {analysisData.opportunities.map((opportunity: string, index: number) => (
+                                  <li key={index} className="flex items-start gap-2 text-sm text-blue-700">
+                                    <TrendingUp className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                    {opportunity}
+                                  </li>
+                                ))}
+                              </ul>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {analysisData.threats && (
+                          <Card className="border-yellow-200 bg-yellow-50">
+                            <CardHeader>
+                              <CardTitle className="text-yellow-800 text-lg">Threats</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <ul className="space-y-2">
+                                {analysisData.threats.map((threat: string, index: number) => (
+                                  <li key={index} className="flex items-start gap-2 text-sm text-yellow-700">
+                                    <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                    {threat}
+                                  </li>
+                                ))}
+                              </ul>
+                            </CardContent>
+                          </Card>
+                        )}
                       </div>
-                      <p className="text-sm leading-relaxed flex-1 text-white/90">{step}</p>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Market Analysis */}
+                  {(analysisData.marketSize || analysisData.competitorAnalysis) && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                          <DollarSign className="h-5 w-5" />
+                          Market Analysis
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {analysisData.marketSize && (
+                            <div>
+                              <h4 className="text-base font-medium text-gray-900 mb-2">Market Size</h4>
+                              <p className="text-sm text-gray-700 leading-relaxed">{analysisData.marketSize}</p>
+                            </div>
+                          )}
+                          {analysisData.competitorAnalysis && (
+                            <div>
+                              <h4 className="text-base font-medium text-gray-900 mb-2">Competitive Landscape</h4>
+                              <p className="text-sm text-gray-700 leading-relaxed">{analysisData.competitorAnalysis}</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Recommendations */}
+                  {(analysisData.recommendedActions || analysisData.riskAssessment || analysisData.fundingRecommendation) && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                          <BookOpen className="h-5 w-5" />
+                          Recommendations
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {analysisData.recommendedActions && (
+                            <div>
+                              <h4 className="text-base font-medium text-gray-900 mb-3">Recommended Actions</h4>
+                              <ul className="space-y-2">
+                                {analysisData.recommendedActions.map((action: string, index: number) => (
+                                  <li key={index} className="flex items-start gap-3 text-sm text-gray-700">
+                                    <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                                    {action}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {analysisData.riskAssessment && (
+                            <div>
+                              <h4 className="text-base font-medium text-gray-900 mb-2">Risk Assessment</h4>
+                              <p className="text-sm text-gray-700 leading-relaxed">{analysisData.riskAssessment}</p>
+                            </div>
+                          )}
+
+                          {analysisData.fundingRecommendation && (
+                            <div>
+                              <h4 className="text-base font-medium text-gray-900 mb-2">Funding Recommendation</h4>
+                              <p className="text-sm text-gray-700 leading-relaxed">{analysisData.fundingRecommendation}</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center p-12 text-center min-h-[400px]">
-              <BarChart3 className="w-16 h-16 text-white/60 mb-4" />
-              <h3 className="text-xl font-semibold mb-2 text-white">No Analysis Data</h3>
-              <p className="text-white/70 mb-4">Unable to load analysis data</p>
-              <Button onClick={onRetry} variant="outline" className="border-white/30 text-white hover:bg-white/10">
-                Try Again
-              </Button>
-            </div>
-          )}
-        </div>
-      </motion.div>
+          </motion.div>
+        </motion.div>
+      )}
     </AnimatePresence>
   )
 }
