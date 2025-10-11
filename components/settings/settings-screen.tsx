@@ -1,28 +1,51 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { User, Bell, Shield, CreditCard, LinkIcon, Trash2, Eye, EyeOff, Camera, Save } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Switch } from "@/components/ui/switch"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AppLayout } from "@/components/layout/app-layout"
-import { motion } from "framer-motion"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  User,
+  Bell,
+  Shield,
+  CreditCard,
+  LinkIcon,
+  Trash2,
+  Eye,
+  EyeOff,
+  Camera,
+  Save,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { AppLayout } from "@/components/layout/app-layout";
+import { motion } from "framer-motion";
 
 export default function SettingsScreen() {
-  const router = useRouter()
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
-  const [showNewPassword, setShowNewPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [profileData, setProfileData] = useState({
     firstName: "John",
@@ -33,13 +56,13 @@ export default function SettingsScreen() {
     website: "https://techventures.com",
     linkedin: "https://linkedin.com/in/johndoe",
     twitter: "https://twitter.com/johndoe",
-  })
+  });
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-  })
+  });
 
   const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: true,
@@ -49,53 +72,63 @@ export default function SettingsScreen() {
     investmentAlerts: true,
     weeklyDigest: false,
     marketingEmails: false,
-  })
+  });
 
   const [privacySettings, setPrivacySettings] = useState({
     profileVisibility: "public",
     showInvestmentHistory: false,
     allowDirectMessages: true,
     showOnlineStatus: true,
-  })
+  });
 
   const handleProfileSave = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
-      setIsLoading(false)
+      setIsLoading(false);
       // Show success message
-    }, 1000)
-  }
+    }, 1000);
+  };
 
   const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       // Show error message
-      return
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
-      setIsLoading(false)
-      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
+      setIsLoading(false);
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
       // Show success message
-    }, 1000)
-  }
+    }, 1000);
+  };
 
   const handleDeleteAccount = () => {
     // Show confirmation dialog
-    if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+    if (
+      confirm(
+        "Are you sure you want to delete your account? This action cannot be undone."
+      )
+    ) {
       // Handle account deletion
-      router.push("/auth/login")
+      router.push("/auth/login");
     }
-  }
+  };
 
   return (
-    <AppLayout userRole="investor">
+    <AppLayout>
       <div className="max-w-4xl mx-auto p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Account Settings</h1>
-          <p className="text-muted-foreground">Manage your account preferences and security settings</p>
+          <p className="text-muted-foreground">
+            Manage your account preferences and security settings
+          </p>
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
@@ -104,7 +137,10 @@ export default function SettingsScreen() {
               <User className="h-4 w-4" />
               Profile
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <TabsTrigger
+              value="notifications"
+              className="flex items-center gap-2"
+            >
               <Bell className="h-4 w-4" />
               Notifications
             </TabsTrigger>
@@ -123,11 +159,17 @@ export default function SettingsScreen() {
           </TabsList>
 
           <TabsContent value="profile">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
               <Card>
                 <CardHeader>
                   <CardTitle>Profile Information</CardTitle>
-                  <CardDescription>Update your personal information and public profile</CardDescription>
+                  <CardDescription>
+                    Update your personal information and public profile
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Profile Picture */}
@@ -144,7 +186,9 @@ export default function SettingsScreen() {
                         <Camera className="h-4 w-4 mr-2" />
                         Change Photo
                       </Button>
-                      <p className="text-sm text-muted-foreground">JPG, PNG or GIF. Max size 2MB.</p>
+                      <p className="text-sm text-muted-foreground">
+                        JPG, PNG or GIF. Max size 2MB.
+                      </p>
                     </div>
                   </div>
 
@@ -157,7 +201,12 @@ export default function SettingsScreen() {
                       <Input
                         id="firstName"
                         value={profileData.firstName}
-                        onChange={(e) => setProfileData((prev) => ({ ...prev, firstName: e.target.value }))}
+                        onChange={(e) =>
+                          setProfileData((prev) => ({
+                            ...prev,
+                            firstName: e.target.value,
+                          }))
+                        }
                         className="border-primary/20 focus:border-primary/50"
                       />
                     </div>
@@ -166,7 +215,12 @@ export default function SettingsScreen() {
                       <Input
                         id="lastName"
                         value={profileData.lastName}
-                        onChange={(e) => setProfileData((prev) => ({ ...prev, lastName: e.target.value }))}
+                        onChange={(e) =>
+                          setProfileData((prev) => ({
+                            ...prev,
+                            lastName: e.target.value,
+                          }))
+                        }
                         className="border-primary/20 focus:border-primary/50"
                       />
                     </div>
@@ -178,7 +232,12 @@ export default function SettingsScreen() {
                       id="email"
                       type="email"
                       value={profileData.email}
-                      onChange={(e) => setProfileData((prev) => ({ ...prev, email: e.target.value }))}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
+                      }
                       className="border-primary/20 focus:border-primary/50"
                     />
                   </div>
@@ -189,7 +248,12 @@ export default function SettingsScreen() {
                       id="bio"
                       placeholder="Tell us about yourself..."
                       value={profileData.bio}
-                      onChange={(e) => setProfileData((prev) => ({ ...prev, bio: e.target.value }))}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          bio: e.target.value,
+                        }))
+                      }
                       className="border-primary/20 focus:border-primary/50 min-h-[100px]"
                     />
                   </div>
@@ -200,7 +264,12 @@ export default function SettingsScreen() {
                       <Input
                         id="company"
                         value={profileData.company}
-                        onChange={(e) => setProfileData((prev) => ({ ...prev, company: e.target.value }))}
+                        onChange={(e) =>
+                          setProfileData((prev) => ({
+                            ...prev,
+                            company: e.target.value,
+                          }))
+                        }
                         className="border-primary/20 focus:border-primary/50"
                       />
                     </div>
@@ -209,7 +278,12 @@ export default function SettingsScreen() {
                       <Input
                         id="website"
                         value={profileData.website}
-                        onChange={(e) => setProfileData((prev) => ({ ...prev, website: e.target.value }))}
+                        onChange={(e) =>
+                          setProfileData((prev) => ({
+                            ...prev,
+                            website: e.target.value,
+                          }))
+                        }
                         className="border-primary/20 focus:border-primary/50"
                       />
                     </div>
@@ -221,7 +295,12 @@ export default function SettingsScreen() {
                       <Input
                         id="linkedin"
                         value={profileData.linkedin}
-                        onChange={(e) => setProfileData((prev) => ({ ...prev, linkedin: e.target.value }))}
+                        onChange={(e) =>
+                          setProfileData((prev) => ({
+                            ...prev,
+                            linkedin: e.target.value,
+                          }))
+                        }
                         className="border-primary/20 focus:border-primary/50"
                       />
                     </div>
@@ -230,7 +309,12 @@ export default function SettingsScreen() {
                       <Input
                         id="twitter"
                         value={profileData.twitter}
-                        onChange={(e) => setProfileData((prev) => ({ ...prev, twitter: e.target.value }))}
+                        onChange={(e) =>
+                          setProfileData((prev) => ({
+                            ...prev,
+                            twitter: e.target.value,
+                          }))
+                        }
                         className="border-primary/20 focus:border-primary/50"
                       />
                     </div>
@@ -261,38 +345,58 @@ export default function SettingsScreen() {
           </TabsContent>
 
           <TabsContent value="notifications">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
               <Card>
                 <CardHeader>
                   <CardTitle>Notification Preferences</CardTitle>
-                  <CardDescription>Choose how you want to be notified about activity</CardDescription>
+                  <CardDescription>
+                    Choose how you want to be notified about activity
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="email-notifications">Email Notifications</Label>
-                        <p className="text-sm text-muted-foreground">Receive notifications via email</p>
+                        <Label htmlFor="email-notifications">
+                          Email Notifications
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Receive notifications via email
+                        </p>
                       </div>
                       <Switch
                         id="email-notifications"
                         checked={notificationSettings.emailNotifications}
                         onCheckedChange={(checked) =>
-                          setNotificationSettings((prev) => ({ ...prev, emailNotifications: checked }))
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            emailNotifications: checked,
+                          }))
                         }
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="push-notifications">Push Notifications</Label>
-                        <p className="text-sm text-muted-foreground">Receive push notifications in your browser</p>
+                        <Label htmlFor="push-notifications">
+                          Push Notifications
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Receive push notifications in your browser
+                        </p>
                       </div>
                       <Switch
                         id="push-notifications"
                         checked={notificationSettings.pushNotifications}
                         onCheckedChange={(checked) =>
-                          setNotificationSettings((prev) => ({ ...prev, pushNotifications: checked }))
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            pushNotifications: checked,
+                          }))
                         }
                       />
                     </div>
@@ -303,42 +407,60 @@ export default function SettingsScreen() {
                       <div>
                         <Label htmlFor="project-updates">Project Updates</Label>
                         <p className="text-sm text-muted-foreground">
-                          Get notified when projects you're interested in are updated
+                          Get notified when projects you're interested in are
+                          updated
                         </p>
                       </div>
                       <Switch
                         id="project-updates"
                         checked={notificationSettings.projectUpdates}
                         onCheckedChange={(checked) =>
-                          setNotificationSettings((prev) => ({ ...prev, projectUpdates: checked }))
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            projectUpdates: checked,
+                          }))
                         }
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="message-notifications">Message Notifications</Label>
-                        <p className="text-sm text-muted-foreground">Get notified when you receive new messages</p>
+                        <Label htmlFor="message-notifications">
+                          Message Notifications
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Get notified when you receive new messages
+                        </p>
                       </div>
                       <Switch
                         id="message-notifications"
                         checked={notificationSettings.messageNotifications}
                         onCheckedChange={(checked) =>
-                          setNotificationSettings((prev) => ({ ...prev, messageNotifications: checked }))
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            messageNotifications: checked,
+                          }))
                         }
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="investment-alerts">Investment Alerts</Label>
-                        <p className="text-sm text-muted-foreground">Get alerts about new investment opportunities</p>
+                        <Label htmlFor="investment-alerts">
+                          Investment Alerts
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Get alerts about new investment opportunities
+                        </p>
                       </div>
                       <Switch
                         id="investment-alerts"
                         checked={notificationSettings.investmentAlerts}
                         onCheckedChange={(checked) =>
-                          setNotificationSettings((prev) => ({ ...prev, investmentAlerts: checked }))
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            investmentAlerts: checked,
+                          }))
                         }
                       />
                     </div>
@@ -348,20 +470,27 @@ export default function SettingsScreen() {
                     <div className="flex items-center justify-between">
                       <div>
                         <Label htmlFor="weekly-digest">Weekly Digest</Label>
-                        <p className="text-sm text-muted-foreground">Receive a weekly summary of platform activity</p>
+                        <p className="text-sm text-muted-foreground">
+                          Receive a weekly summary of platform activity
+                        </p>
                       </div>
                       <Switch
                         id="weekly-digest"
                         checked={notificationSettings.weeklyDigest}
                         onCheckedChange={(checked) =>
-                          setNotificationSettings((prev) => ({ ...prev, weeklyDigest: checked }))
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            weeklyDigest: checked,
+                          }))
                         }
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label htmlFor="marketing-emails">Marketing Emails</Label>
+                        <Label htmlFor="marketing-emails">
+                          Marketing Emails
+                        </Label>
                         <p className="text-sm text-muted-foreground">
                           Receive updates about new features and platform news
                         </p>
@@ -370,7 +499,10 @@ export default function SettingsScreen() {
                         id="marketing-emails"
                         checked={notificationSettings.marketingEmails}
                         onCheckedChange={(checked) =>
-                          setNotificationSettings((prev) => ({ ...prev, marketingEmails: checked }))
+                          setNotificationSettings((prev) => ({
+                            ...prev,
+                            marketingEmails: checked,
+                          }))
                         }
                       />
                     </div>
@@ -391,7 +523,9 @@ export default function SettingsScreen() {
               <Card>
                 <CardHeader>
                   <CardTitle>Change Password</CardTitle>
-                  <CardDescription>Update your password to keep your account secure</CardDescription>
+                  <CardDescription>
+                    Update your password to keep your account secure
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -401,7 +535,12 @@ export default function SettingsScreen() {
                         id="current-password"
                         type={showCurrentPassword ? "text" : "password"}
                         value={passwordData.currentPassword}
-                        onChange={(e) => setPasswordData((prev) => ({ ...prev, currentPassword: e.target.value }))}
+                        onChange={(e) =>
+                          setPasswordData((prev) => ({
+                            ...prev,
+                            currentPassword: e.target.value,
+                          }))
+                        }
                         className="border-primary/20 focus:border-primary/50 pr-10"
                       />
                       <Button
@@ -409,9 +548,15 @@ export default function SettingsScreen() {
                         variant="ghost"
                         size="sm"
                         className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        onClick={() =>
+                          setShowCurrentPassword(!showCurrentPassword)
+                        }
                       >
-                        {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showCurrentPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -423,7 +568,12 @@ export default function SettingsScreen() {
                         id="new-password"
                         type={showNewPassword ? "text" : "password"}
                         value={passwordData.newPassword}
-                        onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
+                        onChange={(e) =>
+                          setPasswordData((prev) => ({
+                            ...prev,
+                            newPassword: e.target.value,
+                          }))
+                        }
                         className="border-primary/20 focus:border-primary/50 pr-10"
                       />
                       <Button
@@ -433,19 +583,30 @@ export default function SettingsScreen() {
                         className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
                         onClick={() => setShowNewPassword(!showNewPassword)}
                       >
-                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showNewPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm New Password</Label>
+                    <Label htmlFor="confirm-password">
+                      Confirm New Password
+                    </Label>
                     <div className="relative">
                       <Input
                         id="confirm-password"
                         type={showConfirmPassword ? "text" : "password"}
                         value={passwordData.confirmPassword}
-                        onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                        onChange={(e) =>
+                          setPasswordData((prev) => ({
+                            ...prev,
+                            confirmPassword: e.target.value,
+                          }))
+                        }
                         className="border-primary/20 focus:border-primary/50 pr-10"
                       />
                       <Button
@@ -453,9 +614,15 @@ export default function SettingsScreen() {
                         variant="ghost"
                         size="sm"
                         className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                       >
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -486,66 +653,101 @@ export default function SettingsScreen() {
               <Card>
                 <CardHeader>
                   <CardTitle>Privacy Settings</CardTitle>
-                  <CardDescription>Control who can see your information and activity</CardDescription>
+                  <CardDescription>
+                    Control who can see your information and activity
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="profile-visibility">Profile Visibility</Label>
+                    <Label htmlFor="profile-visibility">
+                      Profile Visibility
+                    </Label>
                     <Select
                       value={privacySettings.profileVisibility}
-                      onValueChange={(value) => setPrivacySettings((prev) => ({ ...prev, profileVisibility: value }))}
+                      onValueChange={(value) =>
+                        setPrivacySettings((prev) => ({
+                          ...prev,
+                          profileVisibility: value,
+                        }))
+                      }
                     >
                       <SelectTrigger className="border-primary/20 focus:border-primary/50">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="public">Public - Anyone can see your profile</SelectItem>
-                        <SelectItem value="members">
-                          Members Only - Only platform members can see your profile
+                        <SelectItem value="public">
+                          Public - Anyone can see your profile
                         </SelectItem>
-                        <SelectItem value="private">Private - Only you can see your profile</SelectItem>
+                        <SelectItem value="members">
+                          Members Only - Only platform members can see your
+                          profile
+                        </SelectItem>
+                        <SelectItem value="private">
+                          Private - Only you can see your profile
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label htmlFor="show-investment-history">Show Investment History</Label>
-                      <p className="text-sm text-muted-foreground">Display your past investments on your profile</p>
+                      <Label htmlFor="show-investment-history">
+                        Show Investment History
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Display your past investments on your profile
+                      </p>
                     </div>
                     <Switch
                       id="show-investment-history"
                       checked={privacySettings.showInvestmentHistory}
                       onCheckedChange={(checked) =>
-                        setPrivacySettings((prev) => ({ ...prev, showInvestmentHistory: checked }))
+                        setPrivacySettings((prev) => ({
+                          ...prev,
+                          showInvestmentHistory: checked,
+                        }))
                       }
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label htmlFor="allow-direct-messages">Allow Direct Messages</Label>
-                      <p className="text-sm text-muted-foreground">Let other users send you direct messages</p>
+                      <Label htmlFor="allow-direct-messages">
+                        Allow Direct Messages
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Let other users send you direct messages
+                      </p>
                     </div>
                     <Switch
                       id="allow-direct-messages"
                       checked={privacySettings.allowDirectMessages}
                       onCheckedChange={(checked) =>
-                        setPrivacySettings((prev) => ({ ...prev, allowDirectMessages: checked }))
+                        setPrivacySettings((prev) => ({
+                          ...prev,
+                          allowDirectMessages: checked,
+                        }))
                       }
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label htmlFor="show-online-status">Show Online Status</Label>
-                      <p className="text-sm text-muted-foreground">Let others see when you're online</p>
+                      <Label htmlFor="show-online-status">
+                        Show Online Status
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Let others see when you're online
+                      </p>
                     </div>
                     <Switch
                       id="show-online-status"
                       checked={privacySettings.showOnlineStatus}
                       onCheckedChange={(checked) =>
-                        setPrivacySettings((prev) => ({ ...prev, showOnlineStatus: checked }))
+                        setPrivacySettings((prev) => ({
+                          ...prev,
+                          showOnlineStatus: checked,
+                        }))
                       }
                     />
                   </div>
@@ -555,8 +757,12 @@ export default function SettingsScreen() {
               {/* Danger Zone */}
               <Card className="border-destructive/20">
                 <CardHeader>
-                  <CardTitle className="text-destructive">Danger Zone</CardTitle>
-                  <CardDescription>Irreversible and destructive actions</CardDescription>
+                  <CardTitle className="text-destructive">
+                    Danger Zone
+                  </CardTitle>
+                  <CardDescription>
+                    Irreversible and destructive actions
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button
@@ -568,7 +774,8 @@ export default function SettingsScreen() {
                     Delete Account
                   </Button>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Once you delete your account, there is no going back. Please be certain.
+                    Once you delete your account, there is no going back. Please
+                    be certain.
                   </p>
                 </CardContent>
               </Card>
@@ -576,11 +783,17 @@ export default function SettingsScreen() {
           </TabsContent>
 
           <TabsContent value="billing">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
               <Card>
                 <CardHeader>
                   <CardTitle>Billing & Subscription</CardTitle>
-                  <CardDescription>Manage your subscription and billing information</CardDescription>
+                  <CardDescription>
+                    Manage your subscription and billing information
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -603,7 +816,9 @@ export default function SettingsScreen() {
                         <div className="w-8 h-5 bg-gradient-to-r from-blue-600 to-blue-400 rounded mr-3"></div>
                         <div>
                           <div className="font-medium">•••• •••• •••• 4242</div>
-                          <div className="text-sm text-muted-foreground">Expires 12/25</div>
+                          <div className="text-sm text-muted-foreground">
+                            Expires 12/25
+                          </div>
                         </div>
                       </div>
                       <Button variant="outline" size="sm">
@@ -616,14 +831,31 @@ export default function SettingsScreen() {
                     <h4 className="font-medium">Billing History</h4>
                     <div className="space-y-2">
                       {[
-                        { date: "Dec 1, 2023", amount: "$29.00", status: "Paid" },
-                        { date: "Nov 1, 2023", amount: "$29.00", status: "Paid" },
-                        { date: "Oct 1, 2023", amount: "$29.00", status: "Paid" },
+                        {
+                          date: "Dec 1, 2023",
+                          amount: "$29.00",
+                          status: "Paid",
+                        },
+                        {
+                          date: "Nov 1, 2023",
+                          amount: "$29.00",
+                          status: "Paid",
+                        },
+                        {
+                          date: "Oct 1, 2023",
+                          amount: "$29.00",
+                          status: "Paid",
+                        },
                       ].map((invoice, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 border rounded-lg"
+                        >
                           <div>
                             <div className="font-medium">{invoice.date}</div>
-                            <div className="text-sm text-muted-foreground">Pro Plan</div>
+                            <div className="text-sm text-muted-foreground">
+                              Pro Plan
+                            </div>
                           </div>
                           <div className="text-right">
                             <div className="font-medium">{invoice.amount}</div>
@@ -651,29 +883,38 @@ export default function SettingsScreen() {
           </TabsContent>
 
           <TabsContent value="connected">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
               <Card>
                 <CardHeader>
                   <CardTitle>Connected Accounts</CardTitle>
-                  <CardDescription>Manage your connected social accounts and integrations</CardDescription>
+                  <CardDescription>
+                    Manage your connected social accounts and integrations
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {[
                     {
                       name: "Google",
-                      description: "Used for authentication and calendar integration",
+                      description:
+                        "Used for authentication and calendar integration",
                       connected: true,
                       icon: "🔍",
                     },
                     {
                       name: "LinkedIn",
-                      description: "Import professional information and connections",
+                      description:
+                        "Import professional information and connections",
                       connected: true,
                       icon: "💼",
                     },
                     {
                       name: "Twitter",
-                      description: "Share updates and connect with your network",
+                      description:
+                        "Share updates and connect with your network",
                       connected: false,
                       icon: "🐦",
                     },
@@ -684,17 +925,25 @@ export default function SettingsScreen() {
                       icon: "🐙",
                     },
                   ].map((account) => (
-                    <div key={account.name} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div
+                      key={account.name}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
                       <div className="flex items-center">
                         <div className="text-2xl mr-3">{account.icon}</div>
                         <div>
                           <div className="font-medium">{account.name}</div>
-                          <div className="text-sm text-muted-foreground">{account.description}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {account.description}
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         {account.connected && (
-                          <Badge variant="secondary" className="bg-green-500/10 text-green-500">
+                          <Badge
+                            variant="secondary"
+                            className="bg-green-500/10 text-green-500"
+                          >
                             Connected
                           </Badge>
                         )}
@@ -702,7 +951,9 @@ export default function SettingsScreen() {
                           variant={account.connected ? "outline" : "default"}
                           size="sm"
                           className={
-                            account.connected ? "text-destructive border-destructive hover:bg-destructive/10" : ""
+                            account.connected
+                              ? "text-destructive border-destructive hover:bg-destructive/10"
+                              : ""
                           }
                         >
                           {account.connected ? "Disconnect" : "Connect"}
@@ -717,5 +968,5 @@ export default function SettingsScreen() {
         </Tabs>
       </div>
     </AppLayout>
-  )
+  );
 }

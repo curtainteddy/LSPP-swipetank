@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { ensureUser } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
@@ -73,18 +74,22 @@ export async function POST(request: NextRequest) {
       images = [],
     } = body;
 
+    // Ensure we have a corresponding app user with proper Clerk profile data
     let user = await prisma.user.findUnique({
       where: { clerkUserId: userId },
     });
 
     if (!user) {
-      user = await prisma.user.create({
-        data: {
-          clerkUserId: userId,
-          email: "", 
-          name: "", 
-          profileImage: null,
-        },
+      const clerk = await currentUser();
+      if (!clerk) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      user = await ensureUser({
+        id: clerk.id,
+        emailAddresses: clerk.emailAddresses ?? [],
+        firstName: clerk.firstName,
+        lastName: clerk.lastName,
+        imageUrl: clerk.imageUrl,
       });
     }
 

@@ -1,16 +1,34 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { TrendingUp, Users, DollarSign, BarChart3, Download } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { AppLayout } from "@/components/layout/app-layout"
-import { motion } from "framer-motion"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  TrendingUp,
+  Users,
+  DollarSign,
+  BarChart3,
+  Download,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { AppLayout } from "@/components/layout/app-layout";
+import { motion } from "framer-motion";
 
 const analyticsData = {
   overview: {
@@ -50,13 +68,15 @@ const analyticsData = {
       opportunity: "AI-Powered Recommendations",
       impact: "High",
       difficulty: "Medium",
-      description: "Personalized sustainability recommendations based on user behavior",
+      description:
+        "Personalized sustainability recommendations based on user behavior",
     },
     {
       opportunity: "Corporate Integration",
       impact: "High",
       difficulty: "High",
-      description: "B2B solutions for companies to track employee carbon footprints",
+      description:
+        "B2B solutions for companies to track employee carbon footprints",
     },
     {
       opportunity: "Gamification Features",
@@ -65,12 +85,12 @@ const analyticsData = {
       description: "Social challenges and rewards to increase user engagement",
     },
   ],
-}
+};
 
 export default function AnalyticsScreen() {
-  const router = useRouter()
-  const [timeRange, setTimeRange] = useState("30d")
-  const [selectedMetric, setSelectedMetric] = useState("users")
+  const router = useRouter();
+  const [timeRange, setTimeRange] = useState("30d");
+  const [selectedMetric, setSelectedMetric] = useState("users");
 
   const StatCard = ({ title, value, change, icon: Icon, color }: any) => (
     <Card className="hover:shadow-lg transition-shadow duration-300">
@@ -85,16 +105,18 @@ export default function AnalyticsScreen() {
         </p>
       </CardContent>
     </Card>
-  )
+  );
 
   return (
-    <AppLayout userRole="innovator">
+    <AppLayout>
       <div className="p-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-            <p className="text-muted-foreground">Comprehensive insights for your app and market analysis</p>
+            <p className="text-muted-foreground">
+              Comprehensive insights for your app and market analysis
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Select value={timeRange} onValueChange={setTimeRange}>
@@ -132,10 +154,34 @@ export default function AnalyticsScreen() {
             >
               {/* Key Metrics */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Users" value="125K" change={15.2} icon={Users} color="text-blue-500" />
-                <StatCard title="Monthly Revenue" value="$89K" change={23.1} icon={DollarSign} color="text-green-500" />
-                <StatCard title="Conversion Rate" value="3.4%" change={8.7} icon={TrendingUp} color="text-purple-500" />
-                <StatCard title="App Rating" value="4.6" change={2.3} icon={BarChart3} color="text-orange-500" />
+                <StatCard
+                  title="Total Users"
+                  value="125K"
+                  change={15.2}
+                  icon={Users}
+                  color="text-blue-500"
+                />
+                <StatCard
+                  title="Monthly Revenue"
+                  value="$89K"
+                  change={23.1}
+                  icon={DollarSign}
+                  color="text-green-500"
+                />
+                <StatCard
+                  title="Conversion Rate"
+                  value="3.4%"
+                  change={8.7}
+                  icon={TrendingUp}
+                  color="text-purple-500"
+                />
+                <StatCard
+                  title="App Rating"
+                  value="4.6"
+                  change={2.3}
+                  icon={BarChart3}
+                  color="text-orange-500"
+                />
               </div>
 
               {/* Charts Placeholder */}
@@ -143,7 +189,9 @@ export default function AnalyticsScreen() {
                 <Card>
                   <CardHeader>
                     <CardTitle>User Growth</CardTitle>
-                    <CardDescription>Monthly active users over time</CardDescription>
+                    <CardDescription>
+                      Monthly active users over time
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="h-64 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg flex items-center justify-center">
@@ -155,7 +203,9 @@ export default function AnalyticsScreen() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Revenue Breakdown</CardTitle>
-                    <CardDescription>Revenue sources and trends</CardDescription>
+                    <CardDescription>
+                      Revenue sources and trends
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="h-64 bg-gradient-to-br from-secondary/10 to-accent/10 rounded-lg flex items-center justify-center">
@@ -175,22 +225,34 @@ export default function AnalyticsScreen() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                       <div className="flex justify-between mb-2">
-                        <span className="text-sm font-medium">User Retention (30d)</span>
-                        <span className="text-sm text-muted-foreground">68%</span>
+                        <span className="text-sm font-medium">
+                          User Retention (30d)
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          68%
+                        </span>
                       </div>
                       <Progress value={68} className="h-2" />
                     </div>
                     <div>
                       <div className="flex justify-between mb-2">
-                        <span className="text-sm font-medium">Session Duration</span>
-                        <span className="text-sm text-muted-foreground">12.5 min</span>
+                        <span className="text-sm font-medium">
+                          Session Duration
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          12.5 min
+                        </span>
                       </div>
                       <Progress value={75} className="h-2" />
                     </div>
                     <div>
                       <div className="flex justify-between mb-2">
-                        <span className="text-sm font-medium">Feature Adoption</span>
-                        <span className="text-sm text-muted-foreground">84%</span>
+                        <span className="text-sm font-medium">
+                          Feature Adoption
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          84%
+                        </span>
                       </div>
                       <Progress value={84} className="h-2" />
                     </div>
@@ -209,11 +271,18 @@ export default function AnalyticsScreen() {
             >
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {analyticsData.competitors.map((competitor, index) => (
-                  <Card key={competitor.name} className="hover:shadow-lg transition-shadow duration-300">
+                  <Card
+                    key={competitor.name}
+                    className="hover:shadow-lg transition-shadow duration-300"
+                  >
                     <CardHeader>
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{competitor.name}</CardTitle>
-                        <Badge variant="outline">{competitor.marketShare}% market share</Badge>
+                        <CardTitle className="text-lg">
+                          {competitor.name}
+                        </CardTitle>
+                        <Badge variant="outline">
+                          {competitor.marketShare}% market share
+                        </Badge>
                       </div>
                       <CardDescription>
                         {competitor.users} users • {competitor.rating}★ rating
@@ -221,7 +290,9 @@ export default function AnalyticsScreen() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <h4 className="font-medium text-green-600 mb-2">Strengths</h4>
+                        <h4 className="font-medium text-green-600 mb-2">
+                          Strengths
+                        </h4>
                         <ul className="text-sm space-y-1">
                           {competitor.strengths.map((strength, i) => (
                             <li key={i} className="flex items-center">
@@ -232,7 +303,9 @@ export default function AnalyticsScreen() {
                         </ul>
                       </div>
                       <div>
-                        <h4 className="font-medium text-red-600 mb-2">Weaknesses</h4>
+                        <h4 className="font-medium text-red-600 mb-2">
+                          Weaknesses
+                        </h4>
                         <ul className="text-sm space-y-1">
                           {competitor.weaknesses.map((weakness, i) => (
                             <li key={i} className="flex items-center">
@@ -250,11 +323,15 @@ export default function AnalyticsScreen() {
               <Card>
                 <CardHeader>
                   <CardTitle>Competitive Positioning</CardTitle>
-                  <CardDescription>How you stack up against the competition</CardDescription>
+                  <CardDescription>
+                    How you stack up against the competition
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-64 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg flex items-center justify-center">
-                    <p className="text-muted-foreground">Competitive Analysis Chart</p>
+                    <p className="text-muted-foreground">
+                      Competitive Analysis Chart
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -271,18 +348,27 @@ export default function AnalyticsScreen() {
               <Card>
                 <CardHeader>
                   <CardTitle>Market Opportunities</CardTitle>
-                  <CardDescription>Identified gaps and opportunities in the market</CardDescription>
+                  <CardDescription>
+                    Identified gaps and opportunities in the market
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {analyticsData.marketGaps.map((gap, index) => (
-                      <div key={index} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div
+                        key={index}
+                        className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
                         <div className="flex items-start justify-between mb-2">
                           <h3 className="font-medium">{gap.opportunity}</h3>
                           <div className="flex gap-2">
                             <Badge
                               variant={
-                                gap.impact === "High" ? "default" : gap.impact === "Medium" ? "secondary" : "outline"
+                                gap.impact === "High"
+                                  ? "default"
+                                  : gap.impact === "Medium"
+                                  ? "secondary"
+                                  : "outline"
                               }
                             >
                               {gap.impact} Impact
@@ -292,15 +378,17 @@ export default function AnalyticsScreen() {
                                 gap.difficulty === "Low"
                                   ? "default"
                                   : gap.difficulty === "Medium"
-                                    ? "secondary"
-                                    : "outline"
+                                  ? "secondary"
+                                  : "outline"
                               }
                             >
                               {gap.difficulty} Difficulty
                             </Badge>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">{gap.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {gap.description}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -311,20 +399,28 @@ export default function AnalyticsScreen() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Market Size</CardTitle>
-                    <CardDescription>Total addressable market analysis</CardDescription>
+                    <CardDescription>
+                      Total addressable market analysis
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">TAM (Total Addressable Market)</span>
+                        <span className="text-sm font-medium">
+                          TAM (Total Addressable Market)
+                        </span>
                         <span className="font-bold">$12.5B</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">SAM (Serviceable Addressable Market)</span>
+                        <span className="text-sm font-medium">
+                          SAM (Serviceable Addressable Market)
+                        </span>
                         <span className="font-bold">$2.8B</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">SOM (Serviceable Obtainable Market)</span>
+                        <span className="text-sm font-medium">
+                          SOM (Serviceable Obtainable Market)
+                        </span>
                         <span className="font-bold">$450M</span>
                       </div>
                     </div>
@@ -339,7 +435,9 @@ export default function AnalyticsScreen() {
                   <CardContent>
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">2024 Growth Rate</span>
+                        <span className="text-sm font-medium">
+                          2024 Growth Rate
+                        </span>
                         <span className="font-bold text-green-600">+18.5%</span>
                       </div>
                       <div className="flex justify-between items-center">
@@ -347,7 +445,9 @@ export default function AnalyticsScreen() {
                         <span className="font-bold text-green-600">+22.3%</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Market Maturity</span>
+                        <span className="text-sm font-medium">
+                          Market Maturity
+                        </span>
                         <Badge variant="secondary">Early Growth</Badge>
                       </div>
                     </div>
@@ -367,7 +467,9 @@ export default function AnalyticsScreen() {
               <Card>
                 <CardHeader>
                   <CardTitle>AI-Powered Insights</CardTitle>
-                  <CardDescription>Automated analysis and recommendations</CardDescription>
+                  <CardDescription>
+                    Automated analysis and recommendations
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
@@ -375,32 +477,42 @@ export default function AnalyticsScreen() {
                       🚀 Growth Opportunity Detected
                     </h3>
                     <p className="text-sm text-blue-800 dark:text-blue-200">
-                      Your user engagement peaks on weekends. Consider launching weekend-specific features or campaigns
-                      to capitalize on this trend.
+                      Your user engagement peaks on weekends. Consider launching
+                      weekend-specific features or campaigns to capitalize on
+                      this trend.
                     </p>
                   </div>
 
                   <div className="p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
-                    <h3 className="font-medium text-green-900 dark:text-green-100 mb-2">💡 Feature Recommendation</h3>
+                    <h3 className="font-medium text-green-900 dark:text-green-100 mb-2">
+                      💡 Feature Recommendation
+                    </h3>
                     <p className="text-sm text-green-800 dark:text-green-200">
-                      Users who engage with the carbon tracking feature have 40% higher retention. Consider making this
-                      feature more prominent in your onboarding flow.
+                      Users who engage with the carbon tracking feature have 40%
+                      higher retention. Consider making this feature more
+                      prominent in your onboarding flow.
                     </p>
                   </div>
 
                   <div className="p-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-                    <h3 className="font-medium text-orange-900 dark:text-orange-100 mb-2">⚠️ Churn Risk Alert</h3>
+                    <h3 className="font-medium text-orange-900 dark:text-orange-100 mb-2">
+                      ⚠️ Churn Risk Alert
+                    </h3>
                     <p className="text-sm text-orange-800 dark:text-orange-200">
-                      15% of users haven't engaged in the last 7 days. Consider implementing a re-engagement campaign
-                      targeting these users.
+                      15% of users haven't engaged in the last 7 days. Consider
+                      implementing a re-engagement campaign targeting these
+                      users.
                     </p>
                   </div>
 
                   <div className="p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg">
-                    <h3 className="font-medium text-purple-900 dark:text-purple-100 mb-2">📊 Market Trend</h3>
+                    <h3 className="font-medium text-purple-900 dark:text-purple-100 mb-2">
+                      📊 Market Trend
+                    </h3>
                     <p className="text-sm text-purple-800 dark:text-purple-200">
-                      Sustainability apps are seeing increased adoption in the 25-34 age group. This demographic shows
-                      60% higher lifetime value.
+                      Sustainability apps are seeing increased adoption in the
+                      25-34 age group. This demographic shows 60% higher
+                      lifetime value.
                     </p>
                   </div>
                 </CardContent>
@@ -409,7 +521,9 @@ export default function AnalyticsScreen() {
               <Card>
                 <CardHeader>
                   <CardTitle>Predictive Analytics</CardTitle>
-                  <CardDescription>AI forecasts for your app's future performance</CardDescription>
+                  <CardDescription>
+                    AI forecasts for your app's future performance
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -464,5 +578,5 @@ export default function AnalyticsScreen() {
         </Tabs>
       </div>
     </AppLayout>
-  )
+  );
 }

@@ -4,9 +4,15 @@ import { prisma } from "@/lib/prisma";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } } | { params: Promise<{ id: string }> }
 ) {
   try {
+    const params =
+      "params" in context
+        ? context.params instanceof Promise
+          ? await context.params
+          : context.params
+        : (context as any).params;
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -81,9 +87,15 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } } | { params: Promise<{ id: string }> }
 ) {
   try {
+    const params =
+      "params" in context
+        ? context.params instanceof Promise
+          ? await context.params
+          : context.params
+        : (context as any).params;
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
