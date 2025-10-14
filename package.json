@@ -11,6 +11,7 @@
     "db:reset": "prisma migrate reset --force && npm run db:seed"
   },
   "dependencies": {
+    "multer": "^1.4.5-lts.1",
     "@clerk/nextjs": "^6.31.4",
     "@emotion/is-prop-valid": "latest",
     "@google/generative-ai": "^0.24.1",

@@ -1,18 +1,31 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { ArrowLeft, ArrowRight, Upload, X, Plus, DollarSign } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { AppLayout } from "@/components/layout/app-layout"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Upload,
+  X,
+  Plus,
+  DollarSign,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { AppLayout } from "@/components/layout/app-layout";
+import { motion, AnimatePresence } from "framer-motion";
 
 const industries = [
   "Technology",
@@ -25,9 +38,17 @@ const industries = [
   "Food & Beverage",
   "Real Estate",
   "Other",
-]
+];
 
-const investmentTypes = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C+", "Bridge", "Convertible Note"]
+const investmentTypes = [
+  "Pre-Seed",
+  "Seed",
+  "Series A",
+  "Series B",
+  "Series C+",
+  "Bridge",
+  "Convertible Note",
+];
 
 const fundingGoals = [
   "Under $50K",
@@ -38,41 +59,41 @@ const fundingGoals = [
   "$1M - $5M",
   "$5M - $10M",
   "Over $10M",
-]
+];
 
 interface ProjectFormData {
   // Basic Info
-  name: string
-  tagline: string
-  description: string
-  industry: string
-  website: string
+  name: string;
+  tagline: string;
+  description: string;
+  industry: string;
+  website: string;
 
   // Problem & Solution
-  problemStatement: string
-  solution: string
-  targetMarket: string
+  problemStatement: string;
+  solution: string;
+  targetMarket: string;
 
   // Funding
-  fundingGoal: string
-  investmentType: string
-  useOfFunds: string
+  fundingGoal: string;
+  investmentType: string;
+  useOfFunds: string;
 
   // Team & Assets
-  teamSize: string
-  keyTeamMembers: string
-  assets: File[]
+  teamSize: string;
+  keyTeamMembers: string;
+  assets: File[];
 
   // Additional
-  tags: string[]
-  currentTag: string
+  tags: string[];
+  currentTag: string;
 }
 
 export default function NewProjectForm() {
-  const router = useRouter()
-  const [currentStep, setCurrentStep] = useState(1)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const totalSteps = 4
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const totalSteps = 4;
 
   const [formData, setFormData] = useState<ProjectFormData>({
     name: "",
@@ -91,47 +112,72 @@ export default function NewProjectForm() {
     assets: [],
     tags: [],
     currentTag: "",
-  })
+  });
 
   const handleInputChange = (field: keyof ProjectFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleFileUpload = (files: FileList | null) => {
     if (files) {
-      const newFiles = Array.from(files)
-      setFormData((prev) => ({ ...prev, assets: [...prev.assets, ...newFiles] }))
+      const newFiles = Array.from(files);
+      setFormData((prev) => ({
+        ...prev,
+        assets: [...prev.assets, ...newFiles],
+      }));
     }
-  }
+  };
 
   const removeFile = (index: number) => {
     setFormData((prev) => ({
       ...prev,
       assets: prev.assets.filter((_, i) => i !== index),
-    }))
-  }
+    }));
+  };
 
   const addTag = () => {
-    if (formData.currentTag.trim() && !formData.tags.includes(formData.currentTag.trim())) {
+    if (
+      formData.currentTag.trim() &&
+      !formData.tags.includes(formData.currentTag.trim())
+    ) {
       setFormData((prev) => ({
         ...prev,
         tags: [...prev.tags, prev.currentTag.trim()],
         currentTag: "",
-      }))
+      }));
     }
-  }
+  };
 
   const removeTag = (tagToRemove: string) => {
     setFormData((prev) => ({
       ...prev,
       tags: prev.tags.filter((tag) => tag !== tagToRemove),
-    }))
-  }
+    }));
+  };
+
+  const uploadAssetFiles = async (): Promise<string[]> => {
+    const urls: string[] = [];
+    for (const file of formData.assets) {
+      const form = new FormData();
+      form.append("file", file);
+      try {
+        const res = await fetch("/api/upload", { method: "POST", body: form });
+        if (!res.ok) throw new Error("upload failed");
+        const data = await res.json();
+        if (data.url) urls.push(data.url);
+      } catch (e) {
+        console.error("Failed to upload file", file.name, e);
+      }
+    }
+    return urls;
+  };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
+      // Upload assets first (best-effort; continue even if some fail)
+      const uploadedImageUrls = await uploadAssetFiles();
       // Prepare project data
       const projectData = {
         title: formData.name,
@@ -139,8 +185,11 @@ export default function NewProjectForm() {
         price: null, // You can add price field to the form if needed
         status: "DRAFT", // Start as draft, user can publish later
         tags: formData.tags,
-        images: [], // File upload would need to be implemented separately
-      }
+        images: uploadedImageUrls.map((url, idx) => ({
+          url,
+          isPrimary: idx === 0,
+        })),
+      };
 
       const response = await fetch("/api/projects", {
         method: "POST",
@@ -148,66 +197,66 @@ export default function NewProjectForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(projectData),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to create project")
+        throw new Error("Failed to create project");
       }
 
-      const result = await response.json()
-      console.log("Project created:", result.project)
+      const result = await response.json();
+      console.log("Project created:", result.project);
 
       // Redirect to projects page
-      router.push("/projects")
+      router.push("/projects");
     } catch (error) {
-      console.error("Error creating project:", error)
-      alert("Failed to create project. Please try again.")
+      console.error("Error creating project:", error);
+      alert("Failed to create project. Please try again.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const nextStep = () => {
     if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(currentStep + 1);
     }
-  }
+  };
 
   const prevStep = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
+      setCurrentStep(currentStep - 1);
     }
-  }
+  };
 
   const getStepTitle = () => {
     switch (currentStep) {
       case 1:
-        return "Basic Information"
+        return "Basic Information";
       case 2:
-        return "Problem & Solution"
+        return "Problem & Solution";
       case 3:
-        return "Funding Details"
+        return "Funding Details";
       case 4:
-        return "Team & Assets"
+        return "Team & Assets";
       default:
-        return "Project Setup"
+        return "Project Setup";
     }
-  }
+  };
 
   const getStepDescription = () => {
     switch (currentStep) {
       case 1:
-        return "Tell us about your project and what industry you're in"
+        return "Tell us about your project and what industry you're in";
       case 2:
-        return "Describe the problem you're solving and your solution"
+        return "Describe the problem you're solving and your solution";
       case 3:
-        return "Share your funding goals and investment preferences"
+        return "Share your funding goals and investment preferences";
       case 4:
-        return "Add team information and upload relevant assets"
+        return "Add team information and upload relevant assets";
       default:
-        return "Complete your project setup"
+        return "Complete your project setup";
     }
-  }
+  };
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -227,7 +276,11 @@ export default function NewProjectForm() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="industry">Industry *</Label>
-                <Select onValueChange={(value) => handleInputChange("industry", value)}>
+                <Select
+                  onValueChange={(value) =>
+                    handleInputChange("industry", value)
+                  }
+                >
                   <SelectTrigger className="border-primary/20 focus:border-primary/50">
                     <SelectValue placeholder="Select industry" />
                   </SelectTrigger>
@@ -259,7 +312,9 @@ export default function NewProjectForm() {
                 id="description"
                 placeholder="Provide a detailed description of your project, its goals, and current status"
                 value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 className="border-primary/20 focus:border-primary/50 min-h-[120px]"
               />
             </div>
@@ -275,7 +330,7 @@ export default function NewProjectForm() {
               />
             </div>
           </div>
-        )
+        );
 
       case 2:
         return (
@@ -286,7 +341,9 @@ export default function NewProjectForm() {
                 id="problemStatement"
                 placeholder="What specific problem does your project solve? Who experiences this problem?"
                 value={formData.problemStatement}
-                onChange={(e) => handleInputChange("problemStatement", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("problemStatement", e.target.value)
+                }
                 className="border-primary/20 focus:border-primary/50 min-h-[100px]"
               />
             </div>
@@ -308,7 +365,9 @@ export default function NewProjectForm() {
                 id="targetMarket"
                 placeholder="Who is your target audience? What's the market size and opportunity?"
                 value={formData.targetMarket}
-                onChange={(e) => handleInputChange("targetMarket", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("targetMarket", e.target.value)
+                }
                 className="border-primary/20 focus:border-primary/50 min-h-[100px]"
               />
             </div>
@@ -319,8 +378,12 @@ export default function NewProjectForm() {
                 <Input
                   placeholder="Add relevant tags (e.g., AI, Mobile, SaaS)"
                   value={formData.currentTag}
-                  onChange={(e) => handleInputChange("currentTag", e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
+                  onChange={(e) =>
+                    handleInputChange("currentTag", e.target.value)
+                  }
+                  onKeyPress={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), addTag())
+                  }
                   className="border-primary/20 focus:border-primary/50"
                 />
                 <Button type="button" onClick={addTag} variant="outline">
@@ -330,7 +393,11 @@ export default function NewProjectForm() {
               {formData.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {formData.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="bg-primary/10 text-primary">
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="bg-primary/10 text-primary"
+                    >
                       {tag}
                       <Button
                         type="button"
@@ -347,7 +414,7 @@ export default function NewProjectForm() {
               )}
             </div>
           </div>
-        )
+        );
 
       case 3:
         return (
@@ -355,7 +422,11 @@ export default function NewProjectForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="fundingGoal">Funding Goal *</Label>
-                <Select onValueChange={(value) => handleInputChange("fundingGoal", value)}>
+                <Select
+                  onValueChange={(value) =>
+                    handleInputChange("fundingGoal", value)
+                  }
+                >
                   <SelectTrigger className="border-primary/20 focus:border-primary/50">
                     <SelectValue placeholder="Select funding range" />
                   </SelectTrigger>
@@ -371,7 +442,11 @@ export default function NewProjectForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="investmentType">Investment Type *</Label>
-                <Select onValueChange={(value) => handleInputChange("investmentType", value)}>
+                <Select
+                  onValueChange={(value) =>
+                    handleInputChange("investmentType", value)
+                  }
+                >
                   <SelectTrigger className="border-primary/20 focus:border-primary/50">
                     <SelectValue placeholder="Select investment type" />
                   </SelectTrigger>
@@ -392,7 +467,9 @@ export default function NewProjectForm() {
                 id="useOfFunds"
                 placeholder="How will you use the investment? Break down the allocation (e.g., 40% development, 30% marketing, 20% team, 10% operations)"
                 value={formData.useOfFunds}
-                onChange={(e) => handleInputChange("useOfFunds", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("useOfFunds", e.target.value)
+                }
                 className="border-primary/20 focus:border-primary/50 min-h-[120px]"
               />
             </div>
@@ -412,7 +489,7 @@ export default function NewProjectForm() {
               </CardContent>
             </Card>
           </div>
-        )
+        );
 
       case 4:
         return (
@@ -424,7 +501,9 @@ export default function NewProjectForm() {
                   id="teamSize"
                   placeholder="e.g., 3 full-time, 2 part-time"
                   value={formData.teamSize}
-                  onChange={(e) => handleInputChange("teamSize", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("teamSize", e.target.value)
+                  }
                   className="border-primary/20 focus:border-primary/50"
                 />
               </div>
@@ -436,7 +515,9 @@ export default function NewProjectForm() {
                 id="keyTeamMembers"
                 placeholder="Introduce your key team members, their roles, and relevant experience"
                 value={formData.keyTeamMembers}
-                onChange={(e) => handleInputChange("keyTeamMembers", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("keyTeamMembers", e.target.value)
+                }
                 className="border-primary/20 focus:border-primary/50 min-h-[100px]"
               />
             </div>
@@ -459,7 +540,13 @@ export default function NewProjectForm() {
                   className="hidden"
                   id="file-upload"
                 />
-                <Button type="button" variant="outline" onClick={() => document.getElementById("file-upload")?.click()}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    document.getElementById("file-upload")?.click()
+                  }
+                >
                   Choose Files
                 </Button>
               </div>
@@ -468,7 +555,10 @@ export default function NewProjectForm() {
                 <div className="space-y-2">
                   <Label>Uploaded Files</Label>
                   {formData.assets.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                    >
                       <div className="flex items-center">
                         <Upload className="h-4 w-4 mr-2 text-muted-foreground" />
                         <span className="text-sm">{file.name}</span>
@@ -476,7 +566,12 @@ export default function NewProjectForm() {
                           ({(file.size / 1024 / 1024).toFixed(1)} MB)
                         </span>
                       </div>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => removeFile(index)}>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFile(index)}
+                      >
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
@@ -485,26 +580,31 @@ export default function NewProjectForm() {
               )}
             </div>
           </div>
-        )
+        );
 
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" onClick={() => router.push("/projects")} className="hover:bg-primary/10">
+          <Button
+            variant="ghost"
+            onClick={() => router.push("/projects")}
+            className="hover:bg-primary/10"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Projects
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Create New Project</h1>
             <p className="text-muted-foreground">
-              Set up your project to connect with investors and build your portfolio
+              Set up your project to connect with investors and build your
+              portfolio
             </p>
           </div>
         </div>
@@ -521,7 +621,10 @@ export default function NewProjectForm() {
                 Step {currentStep} of {totalSteps}
               </Badge>
             </div>
-            <Progress value={(currentStep / totalSteps) * 100} className="h-2" />
+            <Progress
+              value={(currentStep / totalSteps) * 100}
+              className="h-2"
+            />
           </CardContent>
         </Card>
 
@@ -584,5 +687,5 @@ export default function NewProjectForm() {
         </div>
       </div>
     </AppLayout>
-  )
+  );
 }
