@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import { motion } from "framer-motion"
-import { AppLayout } from "@/components/layout/app-layout"
+import { AppLayout } from "@/components/layout/app-layout-airbnb"
 import { useUser } from "@/contexts/user-context"
 
 const events = [

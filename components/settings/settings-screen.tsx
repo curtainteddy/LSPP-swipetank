@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AppLayout } from "@/components/layout/app-layout"
+import { AppLayout } from "@/components/layout/app-layout-airbnb"
 import { motion } from "framer-motion"
 
 export default function SettingsScreen() {
@@ -91,7 +91,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <AppLayout userRole="investor">
+    <AppLayout>
       <div className="max-w-4xl mx-auto p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Account Settings</h1>

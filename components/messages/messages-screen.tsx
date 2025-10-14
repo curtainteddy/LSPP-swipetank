@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { AppLayout } from "@/components/layout/app-layout"
+import { AppLayout } from "@/components/layout/app-layout-airbnb"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 
@@ -234,7 +234,7 @@ export default function MessagesScreen() {
   }
 
   return (
-    <AppLayout userRole="investor">
+    <AppLayout>
       <div className="h-[calc(100vh-4rem)] flex">
         {/* Conversations List */}
         <div className="w-80 border-r border-border/50 bg-card/30 backdrop-blur-sm">
