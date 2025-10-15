@@ -62,78 +62,9 @@ const iconMap = {
   DollarSign,
 }
 
-const stats = [
-  {
-    title: "Total Projects",
-    value: "12",
-    change: "+2.5%",
-    icon: BarChart3,
-    color: "text-blue-500",
-  },
-  {
-    title: "Active Analyses",
-    value: "8",
-    change: "+12%",
-    icon: TrendingUp,
-    color: "text-green-500",
-  },
-  {
-    title: "Investor Matches",
-    value: "24",
-    change: "+8.1%",
-    icon: Users,
-    color: "text-purple-500",
-  },
-  {
-    title: "Funding Potential",
-    value: "$2.4M",
-    change: "+15%",
-    icon: DollarSign,
-    color: "text-orange-500",
-  },
-]
 
-const recentProjects = [
-  {
-    id: 1,
-    name: "EcoTrack Mobile",
-    description: "Sustainable transportation tracking app with carbon footprint analysis",
-    status: "analyzing",
-    progress: 75,
-    lastUpdated: "2 hours ago",
-    category: "Sustainability",
-    funding: "$150K",
-    team: 4,
-    stage: "MVP",
-    marketSize: "$2.1B",
-  },
-  {
-    id: 2,
-    name: "FinTech Dashboard",
-    description: "Real-time financial analytics platform for small businesses",
-    status: "completed",
-    progress: 100,
-    lastUpdated: "1 day ago",
-    category: "Finance",
-    funding: "$500K",
-    team: 8,
-    stage: "Growth",
-    marketSize: "$4.5B",
-  },
-  {
-    id: 3,
-    name: "HealthCare AI",
-    description: "AI-powered diagnostic tool for early disease detection",
-    status: "pending",
-    progress: 25,
-    lastUpdated: "3 days ago",
-    category: "Healthcare",
-    funding: "$75K",
-    team: 3,
-    stage: "Prototype",
-    marketSize: "$12.3B",
-  },
-]
+
+
 
 
 
@@ -146,8 +77,9 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
+      setIsLoading(true)
       try {
-        const response = await fetch('/api/dashboard')
+        const response = await fetch(`/api/dashboard?userType=${userType}`)
         if (!response.ok) {
           throw new Error('Failed to fetch dashboard data')
         }
@@ -161,7 +93,7 @@ export default function DashboardScreen() {
     }
 
     fetchDashboardData()
-  }, [])
+  }, [userType])
 
   if (isLoading) {
     return (
@@ -271,9 +203,9 @@ export default function DashboardScreen() {
                       {userType === "innovator" ? "Recent Projects" : "Deal Pipeline"}
                     </CardTitle>
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => router.push(userType === "innovator" ? "/analytics" : "/browse")}>
+                      <Button size="sm" onClick={() => router.push(userType === "innovator" ? "/projects/new" : "/browse")}>
                         <Plus className="h-4 w-4 mr-2" />
-                        {userType === "innovator" ? "New Analysis" : "Browse Startups"}
+                        {userType === "innovator" ? "New Project" : "Browse Startups"}
                       </Button>
                     </div>
                   </div>

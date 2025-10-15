@@ -17,8 +17,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Get dashboard data based on user type
-    if (user.userType === "INVENTOR") {
+    // Get userType from query parameters or fall back to user's database type
+    const { searchParams } = new URL(request.url);
+    const requestedUserType = searchParams.get("userType");
+    const effectiveUserType =
+      requestedUserType === "inventor"
+        ? "INVENTOR"
+        : requestedUserType === "investor"
+        ? "INVESTOR"
+        : user.userType;
+
+    // Get dashboard data based on effective user type
+    if (effectiveUserType === "INVENTOR") {
       // Inventor dashboard data
       const [projects, analyses, conversations] = await Promise.all([
         // Get user's projects with counts
@@ -142,13 +152,13 @@ export async function GET(request: NextRequest) {
         userType: "inventor",
         stats: [
           {
-            title: "Total Projects",
+            title: "My Projects",
             value: totalProjects.toString(),
             icon: "BarChart3",
             color: "text-blue-500",
           },
           {
-            title: "Total Investments",
+            title: "Total Investments Received",
             value: totalInvestments.toString(),
             icon: "DollarSign",
             color: "text-green-500",
@@ -160,8 +170,8 @@ export async function GET(request: NextRequest) {
             color: "text-purple-500",
           },
           {
-            title: "Active Analyses",
-            value: activeAnalyses.toString(),
+            title: "Active Conversations",
+            value: conversations.length.toString(),
             icon: "TrendingUp",
             color: "text-orange-500",
           },
