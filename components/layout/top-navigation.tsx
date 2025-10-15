@@ -107,7 +107,6 @@ export function TopNavigation({ sidebarOpen, setSidebarOpen, userRole, isMobile 
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push("/profile")}>Profile</DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
               <SignOutButton redirectUrl="/">
