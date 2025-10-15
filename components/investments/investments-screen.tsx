@@ -261,14 +261,6 @@ export default function InvestmentsScreen() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => router.push(`/projects/${investment.projectId}`)}
-                        >
-                          <FileText className="h-4 w-4 mr-2" />
-                          View
-                        </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">

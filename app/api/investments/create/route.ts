@@ -19,13 +19,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find the user in our database
-    const user = await prisma.user.findUnique({
+    // Find or create the user in our database
+    let user = await prisma.user.findUnique({
       where: { clerkUserId: userId },
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      // Create user if doesn't exist - this handles first-time users
+      user = await prisma.user.create({
+        data: {
+          clerkUserId: userId,
+          email: "", // We'll need to get this from Clerk later
+          name: "Anonymous User", // Default name
+          userType: "INVESTOR", // Default to investor for investment functionality
+        },
+      });
     }
 
     // Check if project exists
