@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // If no cached analysis, generate new one using AI
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
     const prompt = `
 Analyze this startup project for potential investors and return a detailed analysis in JSON format.
