@@ -62,12 +62,10 @@ const testimonials = [
   },
 ]
 
-const stats = [
-  { value: "10K+", label: "Active Users" },
-  { value: "$50M+", label: "Funding Raised" },
-  { value: "500+", label: "Successful Matches" },
-  { value: "95%", label: "Success Rate" },
-]
+const investorQuote = {
+  text: "Risk comes from not knowing what you're doing. The key to investing is not assessing how much an industry is going to affect society, but rather determining the competitive advantage of any given company.",
+  author: "Warren Buffett",
+}
 
 export default function LandingPage() {
   const router = useRouter()
@@ -195,22 +193,28 @@ export default function LandingPage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-primary/20 hover:bg-primary/10 px-8 py-6 text-lg group bg-transparent"
+                className="border-primary/20 hover:bg-primary/10 px-8 py-6 text-lg group bg-transparent hover:text-white"
               >
                 <Play className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
                 Watch Demo
               </Button>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-16">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                    {stat.value}
-                  </div>
-                  <div className="text-muted-foreground mt-2">{stat.label}</div>
-                </div>
-              ))}
+            <motion.div variants={itemVariants} className="pt-16 max-w-4xl mx-auto">
+              <div className="relative bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5 border border-primary/10 rounded-2xl p-8 md:p-12">
+                <div className="absolute top-4 left-4 text-6xl text-primary/20 font-serif">"</div>
+                <blockquote className="text-center">
+                  <p className="text-lg md:text-xl lg:text-2xl font-medium text-foreground leading-relaxed mb-6 italic">
+                    {investorQuote.text}
+                  </p>
+                  <footer className="flex flex-col items-center space-y-2">
+                    <cite className="text-base md:text-lg font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent not-italic">
+                      — {investorQuote.author}
+                    </cite>
+                  </footer>
+                </blockquote>
+                <div className="absolute bottom-4 right-4 text-6xl text-primary/20 font-serif rotate-180">"</div>
+              </div>
             </motion.div>
           </motion.div>
         </div>
@@ -358,7 +362,7 @@ export default function LandingPage() {
                 size="lg"
                 variant="outline"
                 onClick={() => router.push("/sign-in")}
-                className="border-primary/20 hover:bg-primary/10 px-8 py-6 text-lg"
+                className="border-primary/20 hover:bg-primary/10 px-8 py-6 text-lg hover:text-white"
               >
                 Sign In
               </Button>
@@ -385,7 +389,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="border-t border-border/50 mt-8 pt-8 text-center text-muted-foreground">
-            <p>&copy; 2024 GamaKichi: SwipeTank. All rights reserved.</p>
+            <p>&copy; 2025 GamaKichi: SwipeTank. All rights reserved.</p>
           </div>
         </div>
       </footer>
