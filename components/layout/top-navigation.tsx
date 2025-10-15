@@ -73,15 +73,6 @@ export function TopNavigation({ sidebarOpen, setSidebarOpen, userRole, isMobile 
     >
       <div className="flex items-center justify-between px-6 py-3">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="hover:bg-primary/10"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-
           {!isMobile && <Logo />}
         </div>
 
