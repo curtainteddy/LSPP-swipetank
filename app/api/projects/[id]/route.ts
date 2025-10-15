@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 
-export async function PUT(
+export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -12,8 +12,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { status, title, description } = body;
+    const { id } = await params;
 
     const user = await prisma.user.findUnique({
       where: { clerkUserId: userId },
@@ -24,7 +23,81 @@ export async function PUT(
     }
 
     const project = await prisma.project.findUnique({
-      where: { id: params.id },
+      where: { id },
+      include: {
+        inventor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profileImage: true,
+          },
+        },
+        images: {
+          orderBy: {
+            order: "asc",
+          },
+        },
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            investments: true,
+          },
+        },
+      },
+    });
+
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    // Only allow the project owner to edit
+    if (project.inventorId !== user.id) {
+      return NextResponse.json(
+        { error: "Unauthorized access to project" },
+        { status: 403 }
+      );
+    }
+
+    return NextResponse.json({ project });
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch project" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const body = await request.json();
+    const { status, title, description, price } = body;
+
+    const user = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const project = await prisma.project.findUnique({
+      where: { id },
     });
 
     if (!project || project.inventorId !== user.id) {
@@ -35,11 +108,12 @@ export async function PUT(
     }
 
     const updatedProject = await prisma.project.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(status && { status }),
         ...(title && { title }),
         ...(description && { description }),
+        ...(price !== undefined && { price }),
       },
       include: {
         inventor: {
@@ -81,13 +155,15 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const { id } = await params;
 
     const user = await prisma.user.findUnique({
       where: { clerkUserId: userId },
@@ -98,7 +174,7 @@ export async function DELETE(
     }
 
     const project = await prisma.project.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!project || project.inventorId !== user.id) {
@@ -109,7 +185,7 @@ export async function DELETE(
     }
 
     await prisma.project.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: "Project deleted successfully" });

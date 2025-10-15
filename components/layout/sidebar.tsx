@@ -53,7 +53,6 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
         title: "Messages",
         href: "/messages",
         icon: MessageCircle,
-        badge: 3,
         description: "Direct communications",
       },
       {
@@ -84,24 +83,6 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
           icon: FolderOpen,
           description: "Manage your projects",
         },
-        {
-          title: "Analytics",
-          href: "/analytics",
-          icon: BarChart3,
-          description: "App & market analysis",
-        },
-        {
-          title: "Portfolio",
-          href: "/portfolio",
-          icon: Briefcase,
-          description: "Investor presentations",
-        },
-        {
-          title: "Find Investors",
-          href: "/investors",
-          icon: Users,
-          description: "Connect with VCs",
-        },
         ...commonItems,
       ]
     } else {
@@ -123,20 +104,6 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
           href: "/investments",
           icon: TrendingUp,
           description: "Portfolio tracking",
-        },
-        {
-          title: "Saved Projects",
-          href: "/saved",
-          icon: Eye,
-          badge: 12,
-          description: "Bookmarked startups",
-        },
-        {
-          title: "Deal Flow",
-          href: "/deals",
-          icon: Building,
-          badge: 5,
-          description: "Investment pipeline",
         },
         ...commonItems,
       ]
@@ -185,17 +152,6 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
               {/* Header with close button for mobile */}
               {isMobile && (
                 <div className="flex items-center justify-between p-4 border-b border-border/50">
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "py-2 text-sm font-medium cursor-pointer hover:bg-opacity-80 transition-all duration-200",
-                      userType === "innovator" && "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20",
-                      userType === "investor" && "bg-secondary/10 border-secondary/20 text-secondary hover:bg-secondary/20",
-                    )}
-                    onClick={toggleUserType}
-                  >
-                    {userType === "innovator" ? "Innovator Mode" : "Investor Mode"}
-                  </Badge>
                   <Button variant="ghost" size="icon" onClick={onClose}>
                     <X className="h-4 w-4" />
                   </Button>
@@ -237,27 +193,27 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
                       <Button
                         variant={isActive ? "secondary" : "ghost"}
                         className={cn(
-                          "w-full justify-start h-auto p-3 text-left hover:bg-primary/10 transition-colors duration-200",
+                          "group w-full justify-start h-auto p-3 text-left hover:bg-primary/10 hover:text-white transition-colors duration-200",
                           isActive && "bg-primary/10 text-primary border border-primary/20",
                         )}
                         onClick={() => handleNavigation(item.href)}
                       >
                         <div className="flex items-center w-full">
-                          <Icon className={cn("h-5 w-5 mr-3 flex-shrink-0", isActive && "text-primary")} />
+                          <Icon className={cn("h-5 w-5 mr-3 flex-shrink-0 group-hover:text-white transition-colors", isActive && "text-primary")} />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
                               <span className="font-medium truncate">{item.title}</span>
                               {item.badge && (
                                 <Badge
                                   variant="secondary"
-                                  className="ml-2 h-5 min-w-[20px] text-xs bg-secondary/30 text-secondary-foreground"
+                                  className="ml-2 h-5 min-w-[20px] text-xs bg-secondary/30 text-secondary-foreground group-hover:bg-white/20 group-hover:text-white transition-colors"
                                 >
                                   {item.badge}
                                 </Badge>
                               )}
                             </div>
                             {item.description && (
-                              <p className="text-xs text-muted-foreground mt-1 truncate">{item.description}</p>
+                              <p className="text-xs text-muted-foreground group-hover:text-white/80 mt-1 truncate transition-colors">{item.description}</p>
                             )}
                           </div>
                         </div>

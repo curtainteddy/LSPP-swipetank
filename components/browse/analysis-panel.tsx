@@ -1,10 +1,17 @@
 "use client"
 
+import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BarChart3, Target, Lightbulb, X, ArrowLeft, TrendingUp, DollarSign, Users, AlertTriangle, CheckCircle } from "lucide-react"
+import { BarChart3, Target, Lightbulb, X, ArrowLeft, TrendingUp, DollarSign, Users, AlertTriangle, CheckCircle, TrendingUpIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 
 interface AnalysisData {
   summary?: {
@@ -89,6 +96,68 @@ export default function AnalysisPanel({
   onRetry,
   cached = false
 }: AnalysisPanelProps) {
+  const [investDialogOpen, setInvestDialogOpen] = useState(false)
+  const [investmentAmount, setInvestmentAmount] = useState("")
+  const [investmentMessage, setInvestmentMessage] = useState("")
+  const [isInvesting, setIsInvesting] = useState(false)
+  const router = useRouter()
+  const { toast } = useToast()
+
+  const handleInvestment = async () => {
+    if (!investmentAmount || parseFloat(investmentAmount) <= 0) {
+      toast({
+        title: "Invalid Amount",
+        description: "Please enter a valid investment amount",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsInvesting(true)
+    try {
+      const response = await fetch('/api/investments/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectId: project.id,
+          amount: parseFloat(investmentAmount),
+          message: investmentMessage.trim() || undefined,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast({
+          title: "Investment Successful!",
+          description: `Successfully pitched investment for $${parseFloat(investmentAmount).toLocaleString()} in ${project.title}`,
+        })
+        setInvestDialogOpen(false)
+        setInvestmentAmount("")
+        setInvestmentMessage("")
+        // Optionally redirect to investments page
+        router.push('/investments')
+      } else {
+        toast({
+          title: "Investment Failed",
+          description: data.error || "Failed to create investment",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Investment error:', error)
+      toast({
+        title: "Investment Failed",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setIsInvesting(false)
+    }
+  }
+
   if (!isVisible) return null
 
   return (
@@ -138,11 +207,6 @@ export default function AnalysisPanel({
               <div className="flex items-center gap-2 text-white">
                 <BarChart3 className="h-6 w-6" />
                 <h1 className="text-xl font-semibold">Investment Analysis</h1>
-                {cached && (
-                  <div className="ml-2 px-2 py-1 bg-green-500/20 border border-green-400/30 rounded-full text-xs text-green-300">
-                    Cached
-                  </div>
-                )}
               </div>
             </div>
             <Button
@@ -195,7 +259,7 @@ export default function AnalysisPanel({
                 className="w-12 h-12 border-4 border-white border-t-transparent rounded-full mb-4"
               />
               <h3 className="text-xl font-semibold mb-2 text-white">
-                {cached ? "Loading Cached Analysis" : "Generating AI Analysis"}
+                {cached ? "Loading Cached Analysis" : "Wait for SwipeTank to generate analysis"}
               </h3>
               <p className="text-white/70 mb-1">
                 {cached ? "Retrieving saved analysis..." : "Analyzing market conditions..."}
@@ -257,6 +321,98 @@ export default function AnalysisPanel({
                       ))}
                     </div>
                   </div>
+                </div>
+
+                {/* Investment Action Button */}
+                <div className="flex justify-center pt-6 mt-5">
+                  <Dialog open={investDialogOpen} onOpenChange={setInvestDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        size="lg"
+                        className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                      >
+                        <TrendingUpIcon className="w-5 h-5 mr-2" />
+                        Invest in This Project
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Invest in {project.title}</DialogTitle>
+                        <DialogDescription>
+                          Enter your investment amount and optional message to the founder.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="amount">Investment Amount ($)</Label>
+                          <Input
+                            id="amount"
+                            type="number"
+                            placeholder="10000"
+                            value={investmentAmount}
+                            onChange={(e) => setInvestmentAmount(e.target.value)}
+                            min="1"
+                            step="1"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="message">Message to Founder (Optional)</Label>
+                          <Textarea
+                            id="message"
+                            placeholder="I'm interested in investing because..."
+                            value={investmentMessage}
+                            onChange={(e) => setInvestmentMessage(e.target.value)}
+                            rows={3}
+                          />
+                        </div>
+                        <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                          <div className="w-8 h-8 rounded-full overflow-hidden">
+                            {project.images.length > 0 ? (
+                              <img
+                                src={project.images.find(img => img.isPrimary)?.url || project.images[0]?.url}
+                                alt={project.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-muted flex items-center justify-center text-xs">
+                                📦
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">{project.title}</p>
+                            <p className="text-xs text-muted-foreground">by {project.inventor.name}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setInvestDialogOpen(false)}
+                          disabled={isInvesting}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleInvestment}
+                          disabled={isInvesting || !investmentAmount}
+                          className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
+                        >
+                          {isInvesting ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                              Investing...
+                            </>
+                          ) : (
+                            <>
+                              <TrendingUpIcon className="w-4 h-4 mr-2" />
+                              Invest ${investmentAmount ? parseFloat(investmentAmount).toLocaleString() : '0'}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
 

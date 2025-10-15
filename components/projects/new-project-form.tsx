@@ -57,6 +57,7 @@ interface ProjectFormData {
   fundingGoal: string
   investmentType: string
   useOfFunds: string
+  price: string
 
   // Team & Assets
   teamSize: string
@@ -86,6 +87,7 @@ export default function NewProjectForm() {
     fundingGoal: "",
     investmentType: "",
     useOfFunds: "",
+    price: "",
     teamSize: "",
     keyTeamMembers: "",
     assets: [],
@@ -136,7 +138,7 @@ export default function NewProjectForm() {
       const projectData = {
         title: formData.name,
         description: `${formData.tagline}\n\n${formData.description}\n\nProblem: ${formData.problemStatement}\n\nSolution: ${formData.solution}\n\nTarget Market: ${formData.targetMarket}\n\nUse of Funds: ${formData.useOfFunds}\n\nTeam Size: ${formData.teamSize}\n\nKey Team Members: ${formData.keyTeamMembers}`,
-        price: null, // You can add price field to the form if needed
+        price: formData.price ? parseFloat(formData.price) : null,
         status: "DRAFT", // Start as draft, user can publish later
         tags: formData.tags,
         images: [], // File upload would need to be implemented separately
@@ -395,6 +397,21 @@ export default function NewProjectForm() {
                 onChange={(e) => handleInputChange("useOfFunds", e.target.value)}
                 className="border-primary/20 focus:border-primary/50 min-h-[120px]"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="price">Price per Share/Unit ($)</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="e.g., 10.00"
+                value={formData.price}
+                onChange={(e) => handleInputChange("price", e.target.value)}
+                className="border-primary/20 focus:border-primary/50"
+              />
+              <p className="text-sm text-muted-foreground">Optional: Set a price per share or unit for your project</p>
             </div>
 
             <Card className="border-primary/20 bg-primary/5">

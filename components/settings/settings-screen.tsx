@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { User, Bell, Shield, CreditCard, LinkIcon, Trash2, Eye, EyeOff, Camera, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -16,24 +16,34 @@ import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AppLayout } from "@/components/layout/app-layout"
 import { motion } from "framer-motion"
+import { useUser } from "@clerk/nextjs"
 
 export default function SettingsScreen() {
   const router = useRouter()
+  const { user, isLoaded } = useUser()
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const [profileData, setProfileData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    bio: "Passionate investor focused on early-stage tech startups with sustainable impact.",
-    company: "TechVentures Capital",
-    website: "https://techventures.com",
-    linkedin: "https://linkedin.com/in/johndoe",
-    twitter: "https://twitter.com/johndoe",
+    firstName: "",
+    lastName: "",
+    email: "",
+    bio: "",
   })
+
+  // Load user data from Clerk when available
+  useEffect(() => {
+    if (isLoaded && user) {
+      setProfileData({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.primaryEmailAddress?.emailAddress || "",
+        bio: user.publicMetadata?.bio as string || "",
+      })
+    }
+  }, [isLoaded, user])
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -59,12 +69,24 @@ export default function SettingsScreen() {
   })
 
   const handleProfileSave = async () => {
+    if (!user) return;
+    
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Update user profile via Clerk
+      await user.update({
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+      })
+
+
+      // Note: Email changes require verification through Clerk's built-in flow
+      
+    } catch (error) {
+      console.error("Error updating profile:", error)
+    } finally {
       setIsLoading(false)
-      // Show success message
-    }, 1000)
+    }
   }
 
   const handlePasswordChange = async () => {
@@ -90,8 +112,21 @@ export default function SettingsScreen() {
     }
   }
 
+  if (!isLoaded) {
+    return (
+      <AppLayout>
+        <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading settings...</p>
+          </div>
+        </div>
+      </AppLayout>
+    )
+  }
+
   return (
-    <AppLayout userRole="investor">
+    <AppLayout>
       <div className="max-w-4xl mx-auto p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Account Settings</h1>
@@ -133,19 +168,12 @@ export default function SettingsScreen() {
                   {/* Profile Picture */}
                   <div className="flex items-center gap-6">
                     <Avatar className="h-20 w-20">
-                      <AvatarImage src="/placeholder.svg" />
+                      <AvatarImage src={user?.imageUrl || "/placeholder.svg"} />
                       <AvatarFallback className="text-lg">
-                        {profileData.firstName.charAt(0)}
-                        {profileData.lastName.charAt(0)}
+                        {profileData.firstName.charAt(0) || "U"}
+                        {profileData.lastName.charAt(0) || ""}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <Button variant="outline" className="mb-2 bg-transparent">
-                        <Camera className="h-4 w-4 mr-2" />
-                        Change Photo
-                      </Button>
-                      <p className="text-sm text-muted-foreground">JPG, PNG or GIF. Max size 2MB.</p>
-                    </div>
                   </div>
 
                   <Separator />
@@ -178,9 +206,10 @@ export default function SettingsScreen() {
                       id="email"
                       type="email"
                       value={profileData.email}
-                      onChange={(e) => setProfileData((prev) => ({ ...prev, email: e.target.value }))}
-                      className="border-primary/20 focus:border-primary/50"
+                      readOnly
+                      className="border-primary/20 focus:border-primary/50 bg-muted cursor-not-allowed"
                     />
+                    <p className="text-xs text-muted-foreground">Email changes are managed through your Clerk account settings.</p>
                   </div>
 
                   <div className="space-y-2">
@@ -194,47 +223,7 @@ export default function SettingsScreen() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="company">Company</Label>
-                      <Input
-                        id="company"
-                        value={profileData.company}
-                        onChange={(e) => setProfileData((prev) => ({ ...prev, company: e.target.value }))}
-                        className="border-primary/20 focus:border-primary/50"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="website">Website</Label>
-                      <Input
-                        id="website"
-                        value={profileData.website}
-                        onChange={(e) => setProfileData((prev) => ({ ...prev, website: e.target.value }))}
-                        className="border-primary/20 focus:border-primary/50"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedin">LinkedIn</Label>
-                      <Input
-                        id="linkedin"
-                        value={profileData.linkedin}
-                        onChange={(e) => setProfileData((prev) => ({ ...prev, linkedin: e.target.value }))}
-                        className="border-primary/20 focus:border-primary/50"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="twitter">Twitter</Label>
-                      <Input
-                        id="twitter"
-                        value={profileData.twitter}
-                        onChange={(e) => setProfileData((prev) => ({ ...prev, twitter: e.target.value }))}
-                        className="border-primary/20 focus:border-primary/50"
-                      />
-                    </div>
-                  </div>
 
                   <div className="flex justify-end">
                     <Button

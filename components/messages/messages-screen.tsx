@@ -32,7 +32,9 @@ interface Conversation {
   lastMessageTime: string
   unreadCount: number
   isOnline: boolean
-  messages: Message[]
+  messages?: Message[]
+  projectId?: string
+  conversationId?: string
 }
 
 const conversations: Conversation[] = [
@@ -178,16 +180,72 @@ export default function MessagesScreen() {
   const searchParams = useSearchParams()
   const projectId = searchParams.get("project")
 
-  const [selectedConversation, setSelectedConversation] = useState<string>(
-    projectId
-      ? conversations.find((c) => c.projectName.toLowerCase().includes("eco"))?.id || conversations[0].id
-      : conversations[0].id,
-  )
+  const [selectedConversation, setSelectedConversation] = useState<string>("")
   const [newMessage, setNewMessage] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
+  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [currentMessages, setCurrentMessages] = useState<Message[]>([])
+  const [loading, setLoading] = useState(true)
+  const [sendingMessage, setSendingMessage] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const currentConversation = conversations.find((c) => c.id === selectedConversation)
+  // Fetch conversations on mount
+  useEffect(() => {
+    fetchConversations()
+  }, [])
+
+  // Fetch messages when conversation changes
+  useEffect(() => {
+    if (selectedConversation) {
+      fetchMessages(selectedConversation)
+    }
+  }, [selectedConversation])
+
+  const fetchConversations = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/messages')
+      if (response.ok) {
+        const data = await response.json()
+        setConversations(data.conversations)
+        
+        // Auto-select first conversation or one matching project
+        if (data.conversations.length > 0) {
+          const targetConversation = projectId 
+            ? data.conversations.find((c: any) => c.projectId === projectId)
+            : data.conversations[0]
+          
+          if (targetConversation) {
+            setSelectedConversation(targetConversation.conversationId || targetConversation.id)
+          }
+        }
+      } else {
+        console.error('Failed to fetch conversations')
+      }
+    } catch (error) {
+      console.error('Error fetching conversations:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchMessages = async (conversationId: string) => {
+    try {
+      const response = await fetch(`/api/messages/${conversationId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setCurrentMessages(data.messages)
+      } else {
+        console.error('Failed to fetch messages')
+        setCurrentMessages([])
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error)
+      setCurrentMessages([])
+    }
+  }
+
+  const currentConversation = conversations.find((c) => c.id === selectedConversation || c.conversationId === selectedConversation)
   const filteredConversations = conversations.filter(
     (conv) =>
       conv.participantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -198,24 +256,51 @@ export default function MessagesScreen() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [selectedConversation, currentConversation?.messages])
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim() || !currentConversation) return
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedConversation) return
 
-    const message: Message = {
-      id: Date.now().toString(),
-      senderId: "user",
-      content: newMessage,
-      timestamp: new Date(),
-      type: "text",
+    setSendingMessage(true)
+    try {
+      const response = await fetch(`/api/messages/${selectedConversation}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: newMessage,
+          type: 'TEXT',
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Add the new message to current messages
+        setCurrentMessages(prev => [...prev, data.message])
+        setNewMessage("")
+        
+        // Update conversations list
+        setConversations(prev => prev.map(conv => 
+          conv.id === selectedConversation || conv.conversationId === selectedConversation
+            ? {
+                ...conv,
+                lastMessage: newMessage,
+                lastMessageTime: "Just now",
+              }
+            : conv
+        ))
+      } else {
+        console.error('Failed to send message')
+      }
+    } catch (error) {
+      console.error('Error sending message:', error)
+    } finally {
+      setSendingMessage(false)
     }
-
-    // In a real app, this would update the conversation in state/database
-    currentConversation.messages.push(message)
-    setNewMessage("")
   }
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  const formatTime = (date: Date | string) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
   }
 
   const formatMessageTime = (timestamp: string) => {
@@ -233,8 +318,42 @@ export default function MessagesScreen() {
     }
   }
 
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="flex h-[calc(100vh-4rem)] bg-background items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading conversations...</p>
+          </div>
+        </div>
+      </AppLayout>
+    )
+  }
+
+  if (!loading && conversations.length === 0) {
+    return (
+      <AppLayout>
+        <div className="flex h-[calc(100vh-4rem)] bg-background items-center justify-center">
+          <div className="text-center">
+            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4 mx-auto">
+              <Send className="h-10 w-10 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-medium">No conversations yet</h3>
+            <p className="text-sm text-muted-foreground mt-1 mb-4">
+              Start investing in projects to begin conversations with founders
+            </p>
+            <Button onClick={() => router.push('/browse')}>
+              Browse Projects
+            </Button>
+          </div>
+        </div>
+      </AppLayout>
+    )
+  }
+
   return (
-    <AppLayout userRole="investor">
+    <AppLayout>
       <div className="h-[calc(100vh-4rem)] flex">
         {/* Conversations List */}
         <div className="w-80 border-r border-border/50 bg-card/30 backdrop-blur-sm">
@@ -278,12 +397,6 @@ export default function MessagesScreen() {
                     <div className="flex items-center justify-between">
                       <h3 className="font-medium truncate">{conversation.participantName}</h3>
                       <span className="text-xs text-muted-foreground">{conversation.lastMessageTime}</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm text-muted-foreground truncate">{conversation.lastMessage}</p>
-                      {conversation.unreadCount > 0 && (
-                        <Badge className="ml-2 h-5 w-5 p-0 text-xs bg-primary">{conversation.unreadCount}</Badge>
-                      )}
                     </div>
                     <div className="mt-1">
                       <Badge variant="outline" className="text-xs bg-secondary/10 text-secondary">
@@ -351,7 +464,7 @@ export default function MessagesScreen() {
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
                 <AnimatePresence>
-                  {currentConversation.messages.map((message) => (
+                  {currentMessages.map((message) => (
                     <motion.div
                       key={message.id}
                       initial={{ opacity: 0, y: 10 }}

@@ -1,0 +1,148 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
+
+export async function POST(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { projectId, amount, message } = body;
+
+    if (!projectId || !amount) {
+      return NextResponse.json(
+        { error: "Project ID and amount are required" },
+        { status: 400 }
+      );
+    }
+
+    // Find or create the user in our database
+    let user = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+    });
+
+    if (!user) {
+      // Create user if doesn't exist - this handles first-time users
+      user = await prisma.user.create({
+        data: {
+          clerkUserId: userId,
+          email: "", // We'll need to get this from Clerk later
+          name: "Anonymous User", // Default name
+          userType: "INVESTOR", // Default to investor for investment functionality
+        },
+      });
+    }
+
+    // Check if project exists
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+    });
+
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    // Check if user has already invested in this project
+    const existingInvestment = await prisma.investment.findFirst({
+      where: {
+        investorId: user.id,
+        projectId: projectId,
+      },
+    });
+
+    if (existingInvestment) {
+      return NextResponse.json(
+        { error: "You have already invested in this project" },
+        { status: 400 }
+      );
+    }
+
+    // Create the investment
+    const investment = await prisma.investment.create({
+      data: {
+        amount: parseFloat(amount),
+        message: message || null,
+        investorId: user.id,
+        projectId: projectId,
+      },
+      include: {
+        project: {
+          include: {
+            inventor: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                profileImage: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Create or find existing conversation between investor and inventor
+    let conversation = await prisma.conversation.findFirst({
+      where: {
+        projectId: projectId,
+        investorId: user.id,
+        inventorId: project.inventorId,
+      },
+    });
+
+    if (!conversation) {
+      conversation = await prisma.conversation.create({
+        data: {
+          projectId: projectId,
+          investorId: user.id,
+          inventorId: project.inventorId,
+        },
+      });
+    }
+
+    // Create investment notification message
+    if (message) {
+      await prisma.message.create({
+        data: {
+          content: `Investment pitch of $${parseFloat(
+            amount
+          ).toLocaleString()} made with message: "${message}"`,
+          type: "INVESTMENT",
+          conversationId: conversation.id,
+          senderId: user.id,
+        },
+      });
+    } else {
+      await prisma.message.create({
+        data: {
+          content: `Investment pitch of $${parseFloat(amount).toLocaleString()} made`,
+          type: "INVESTMENT",
+          conversationId: conversation.id,
+          senderId: user.id,
+        },
+      });
+    }
+
+    // Update conversation timestamp
+    await prisma.conversation.update({
+      where: { id: conversation.id },
+      data: { updatedAt: new Date() },
+    });
+
+    return NextResponse.json({
+      success: true,
+      investment,
+      conversationId: conversation.id,
+      message: "Investment created successfully and conversation started",
+    });
+  } catch (error) {
+    console.error("Error creating investment:", error);
+    return NextResponse.json(
+      { error: "Failed to create investment" },
+      { status: 500 }
+    );
+  }
+}

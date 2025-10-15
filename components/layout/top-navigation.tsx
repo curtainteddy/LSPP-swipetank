@@ -20,7 +20,7 @@ import { Logo } from "@/components/ui/logo"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { motion } from "framer-motion"
 import { useUser } from "@/contexts/user-context"
-import { SignOutButton } from "@clerk/nextjs"
+import { SignOutButton, useUser as useClerkUser } from "@clerk/nextjs"
 
 interface TopNavigationProps {
   sidebarOpen: boolean
@@ -33,6 +33,7 @@ export function TopNavigation({ sidebarOpen, setSidebarOpen, userRole, isMobile 
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const { userType } = useUser()
+  const { user: clerkUser } = useClerkUser()
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,74 +74,11 @@ export function TopNavigation({ sidebarOpen, setSidebarOpen, userRole, isMobile 
     >
       <div className="flex items-center justify-between px-6 py-3">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="hover:bg-primary/10"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-
           {!isMobile && <Logo />}
-        </div>
-
-        {/* Search Bar */}
-        <div className="flex-1 max-w-md mx-4">
-          <form onSubmit={handleSearch} className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={userType === "investor" ? "Search projects..." : "Search analytics..."}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 border-primary/20 focus:border-primary/50 bg-background/50"
-            />
-          </form>
         </div>
 
         <div className="flex items-center gap-3">
           {!isMobile && getRoleSpecificActions()}
-
-          {/* Messages */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push("/messages")}
-            className="relative hover:bg-primary/10"
-          >
-            <MessageCircle className="h-5 w-5" />
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-secondary flex items-center justify-center">
-              3
-            </Badge>
-          </Button>
-
-          {/* Notifications */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative hover:bg-primary/10">
-                <Bell className="h-5 w-5" />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-destructive flex items-center justify-center">
-                  5
-                </Badge>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex flex-col items-start p-4">
-                <div className="font-medium">New investor match</div>
-                <div className="text-sm text-muted-foreground">TechVentures is interested in EcoTrack</div>
-                <div className="text-xs text-muted-foreground mt-1">5 minutes ago</div>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start p-4">
-                <div className="font-medium">Analysis completed</div>
-                <div className="text-sm text-muted-foreground">Your competitor analysis is ready</div>
-                <div className="text-xs text-muted-foreground mt-1">1 hour ago</div>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-center text-primary">View all notifications</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
 
           <ThemeToggle />
 
@@ -149,15 +87,16 @@ export function TopNavigation({ sidebarOpen, setSidebarOpen, userRole, isMobile 
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/placeholder.svg" alt="User" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarImage src={clerkUser?.imageUrl} alt="User" />
+                  <AvatarFallback>
+                    {clerkUser?.firstName?.charAt(0)}{clerkUser?.lastName?.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push("/profile")}>Profile</DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
               <SignOutButton redirectUrl="/">
