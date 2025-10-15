@@ -20,7 +20,7 @@ import { Logo } from "@/components/ui/logo"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { motion } from "framer-motion"
 import { useUser } from "@/contexts/user-context"
-import { SignOutButton } from "@clerk/nextjs"
+import { SignOutButton, useUser as useClerkUser } from "@clerk/nextjs"
 
 interface TopNavigationProps {
   sidebarOpen: boolean
@@ -33,6 +33,7 @@ export function TopNavigation({ sidebarOpen, setSidebarOpen, userRole, isMobile 
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const { userType } = useUser()
+  const { user: clerkUser } = useClerkUser()
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -86,8 +87,10 @@ export function TopNavigation({ sidebarOpen, setSidebarOpen, userRole, isMobile 
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/placeholder.svg" alt="User" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarImage src={clerkUser?.imageUrl} alt="User" />
+                  <AvatarFallback>
+                    {clerkUser?.firstName?.charAt(0)}{clerkUser?.lastName?.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
