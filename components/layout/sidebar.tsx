@@ -152,17 +152,6 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
               {/* Header with close button for mobile */}
               {isMobile && (
                 <div className="flex items-center justify-between p-4 border-b border-border/50">
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "py-2 text-sm font-medium cursor-pointer hover:bg-opacity-80 transition-all duration-200",
-                      userType === "innovator" && "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20",
-                      userType === "investor" && "bg-secondary/10 border-secondary/20 text-secondary hover:bg-secondary/20",
-                    )}
-                    onClick={toggleUserType}
-                  >
-                    {userType === "innovator" ? "Innovator Mode" : "Investor Mode"}
-                  </Badge>
                   <Button variant="ghost" size="icon" onClick={onClose}>
                     <X className="h-4 w-4" />
                   </Button>

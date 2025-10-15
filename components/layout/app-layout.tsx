@@ -49,7 +49,6 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       <main className={`${!isMobile ? 'ml-64' : ''} pt-16`}>{children}</main>
 
-      <FabToggleRole />
     </div>
   )
 }
