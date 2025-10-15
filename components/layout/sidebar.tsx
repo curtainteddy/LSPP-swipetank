@@ -84,24 +84,6 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
           icon: FolderOpen,
           description: "Manage your projects",
         },
-        {
-          title: "Analytics",
-          href: "/analytics",
-          icon: BarChart3,
-          description: "App & market analysis",
-        },
-        {
-          title: "Portfolio",
-          href: "/portfolio",
-          icon: Briefcase,
-          description: "Investor presentations",
-        },
-        {
-          title: "Find Investors",
-          href: "/investors",
-          icon: Users,
-          description: "Connect with VCs",
-        },
         ...commonItems,
       ]
     } else {
@@ -123,20 +105,6 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
           href: "/investments",
           icon: TrendingUp,
           description: "Portfolio tracking",
-        },
-        {
-          title: "Saved Projects",
-          href: "/saved",
-          icon: Eye,
-          badge: 12,
-          description: "Bookmarked startups",
-        },
-        {
-          title: "Deal Flow",
-          href: "/deals",
-          icon: Building,
-          badge: 5,
-          description: "Investment pipeline",
         },
         ...commonItems,
       ]
