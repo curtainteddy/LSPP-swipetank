@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { motion } from "framer-motion"
 import { AppLayout } from "@/components/layout/app-layout"
 import { useUser } from "@/contexts/user-context"
+import { useUser as useClerkUser } from "@clerk/nextjs"
 
 interface DashboardData {
   userType: "inventor" | "investor"
@@ -141,6 +142,7 @@ export default function DashboardScreen() {
   const [isLoading, setIsLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const { userType } = useUser()
+  const { user: clerkUser } = useClerkUser()
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -239,7 +241,7 @@ export default function DashboardScreen() {
               className="mb-8"
             >
               <h1 className="text-3xl font-bold mb-2">
-                Welcome back, {userType === "innovator" ? "John" : "Sarah"}!
+                Welcome back, {clerkUser?.firstName || 'there'}!
               </h1>
               <p className="text-muted-foreground">
                 {userType === "innovator" 

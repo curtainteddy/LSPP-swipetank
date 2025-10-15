@@ -76,19 +76,6 @@ export function TopNavigation({ sidebarOpen, setSidebarOpen, userRole, isMobile 
           {!isMobile && <Logo />}
         </div>
 
-        {/* Search Bar */}
-        <div className="flex-1 max-w-md mx-4">
-          <form onSubmit={handleSearch} className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={userType === "investor" ? "Search projects..." : "Search analytics..."}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 border-primary/20 focus:border-primary/50 bg-background/50"
-            />
-          </form>
-        </div>
-
         <div className="flex items-center gap-3">
           {!isMobile && getRoleSpecificActions()}
 
