@@ -132,7 +132,7 @@ export default function AnalysisPanel({
       if (response.ok) {
         toast({
           title: "Investment Successful!",
-          description: `Successfully invested $${parseFloat(investmentAmount).toLocaleString()} in ${project.title}`,
+          description: `Successfully pitched investment for $${parseFloat(investmentAmount).toLocaleString()} in ${project.title}`,
         })
         setInvestDialogOpen(false)
         setInvestmentAmount("")
@@ -259,7 +259,7 @@ export default function AnalysisPanel({
                 className="w-12 h-12 border-4 border-white border-t-transparent rounded-full mb-4"
               />
               <h3 className="text-xl font-semibold mb-2 text-white">
-                {cached ? "Loading Cached Analysis" : "Generating AI Analysis"}
+                {cached ? "Loading Cached Analysis" : "Wait for SwipeTank to generate analysis"}
               </h3>
               <p className="text-white/70 mb-1">
                 {cached ? "Retrieving saved analysis..." : "Analyzing market conditions..."}

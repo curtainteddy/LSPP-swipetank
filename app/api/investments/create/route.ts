@@ -84,10 +84,59 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Create or find existing conversation between investor and inventor
+    let conversation = await prisma.conversation.findFirst({
+      where: {
+        projectId: projectId,
+        investorId: user.id,
+        inventorId: project.inventorId,
+      },
+    });
+
+    if (!conversation) {
+      conversation = await prisma.conversation.create({
+        data: {
+          projectId: projectId,
+          investorId: user.id,
+          inventorId: project.inventorId,
+        },
+      });
+    }
+
+    // Create investment notification message
+    if (message) {
+      await prisma.message.create({
+        data: {
+          content: `Investment pitch of $${parseFloat(
+            amount
+          ).toLocaleString()} made with message: "${message}"`,
+          type: "INVESTMENT",
+          conversationId: conversation.id,
+          senderId: user.id,
+        },
+      });
+    } else {
+      await prisma.message.create({
+        data: {
+          content: `Investment pitch of $${parseFloat(amount).toLocaleString()} made`,
+          type: "INVESTMENT",
+          conversationId: conversation.id,
+          senderId: user.id,
+        },
+      });
+    }
+
+    // Update conversation timestamp
+    await prisma.conversation.update({
+      where: { id: conversation.id },
+      data: { updatedAt: new Date() },
+    });
+
     return NextResponse.json({
       success: true,
       investment,
-      message: "Investment created successfully",
+      conversationId: conversation.id,
+      message: "Investment created successfully and conversation started",
     });
   } catch (error) {
     console.error("Error creating investment:", error);

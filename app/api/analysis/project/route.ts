@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // If no cached analysis, generate new one using AI
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
     const prompt = `
 Analyze this startup project for potential investors and return a detailed analysis in JSON format.
@@ -117,10 +117,10 @@ Provide realistic, data-driven insights. If specific data isn't available, make 
       if (jsonMatch) {
         analysisData = JSON.parse(jsonMatch[0]);
       } else {
-        throw new Error('No JSON found in response');
+        throw new Error("No JSON found in response");
       }
     } catch (parseError) {
-      console.error('JSON parse error:', parseError);
+      console.error("JSON parse error:", parseError);
       // Fallback response if JSON parsing fails
       analysisData = {
         error: "Analysis generated but couldn't be parsed properly",
@@ -128,8 +128,12 @@ Provide realistic, data-driven insights. If specific data isn't available, make 
         summary: {
           overallScore: 7.0,
           investmentRecommendation: "Further Analysis Needed",
-          keyHighlights: ["Promising concept", "Market potential exists", "Needs more detailed evaluation"]
-        }
+          keyHighlights: [
+            "Promising concept",
+            "Market potential exists",
+            "Needs more detailed evaluation",
+          ],
+        },
       };
     }
 
@@ -142,25 +146,24 @@ Provide realistic, data-driven insights. If specific data isn't available, make 
         },
       });
     } catch (dbError) {
-      console.error('Database error while storing analysis:', dbError);
+      console.error("Database error while storing analysis:", dbError);
       // Continue even if database storage fails, return the analysis
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       analysis: analysisData,
       projectId,
       cached: false,
       generatedAt: new Date(),
     });
-
   } catch (error) {
     console.error("Analysis generation error:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: "Failed to generate analysis",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

@@ -22,9 +22,12 @@ model User {
     updatedAt    DateTime  @updatedAt
 
     // Relations
-    projects    Project[]
-    investments Investment[]
-    likes       ProjectLike[]
+    projects              Project[]
+    investments           Investment[]
+    likes                 ProjectLike[]
+    investorConversations Conversation[] @relation("InvestorConversations")
+    inventorConversations Conversation[] @relation("InventorConversations")
+    messages              Message[]
 
     @@map("users")
 }
@@ -39,13 +42,14 @@ model Project {
     updatedAt   DateTime      @updatedAt
 
     // Relations
-    inventor    User           @relation(fields: [inventorId], references: [id], onDelete: Cascade)
-    inventorId  String
-    images      ProjectImage[]
-    tags        ProjectTag[]
-    investments Investment[]
-    likes       ProjectLike[]
-    analysis    Analysis?
+    inventor      User           @relation(fields: [inventorId], references: [id], onDelete: Cascade)
+    inventorId    String
+    images        ProjectImage[]
+    tags          ProjectTag[]
+    investments   Investment[]
+    likes         ProjectLike[]
+    analysis      Analysis?
+    conversations Conversation[]
 
     @@map("projects")
 }
@@ -129,4 +133,45 @@ enum ProjectStatus {
     DRAFT
     PUBLISHED
     ARCHIVED
+}
+
+model Conversation {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    projectId  String
+    investor   User      @relation("InvestorConversations", fields: [investorId], references: [id], onDelete: Cascade)
+    investorId String
+    inventor   User      @relation("InventorConversations", fields: [inventorId], references: [id], onDelete: Cascade)
+    inventorId String
+    messages   Message[]
+
+    @@unique([projectId, investorId])
+    @@map("conversations")
+}
+
+model Message {
+    id        String      @id @default(cuid())
+    content   String
+    type      MessageType @default(TEXT)
+    fileName  String?
+    createdAt DateTime    @default(now())
+
+    // Relations
+    conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+    conversationId String
+    sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+    senderId       String
+
+    @@map("messages")
+}
+
+enum MessageType {
+    TEXT
+    FILE
+    SYSTEM
+    INVESTMENT
 }

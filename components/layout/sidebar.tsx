@@ -53,7 +53,6 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
         title: "Messages",
         href: "/messages",
         icon: MessageCircle,
-        badge: 3,
         description: "Direct communications",
       },
       {
