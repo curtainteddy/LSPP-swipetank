@@ -138,11 +138,6 @@ export default function AnalysisPanel({
               <div className="flex items-center gap-2 text-white">
                 <BarChart3 className="h-6 w-6" />
                 <h1 className="text-xl font-semibold">Investment Analysis</h1>
-                {cached && (
-                  <div className="ml-2 px-2 py-1 bg-green-500/20 border border-green-400/30 rounded-full text-xs text-green-300">
-                    Cached
-                  </div>
-                )}
               </div>
             </div>
             <Button

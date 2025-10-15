@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Bookmark, Grid, List, Search, Tag, MessageCircle, Eye, Trash2 } from "lucide-react"
+import { Bookmark, Grid, List, Search, Tag, MessageCircle, Eye, Trash2, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { AppLayout } from "@/components/layout/app-layout"
 import { useUser } from "@/contexts/user-context"
 import { motion, AnimatePresence } from "framer-motion"
@@ -159,7 +159,7 @@ export default function SavedProjectsScreen() {
   }
 
   return (
-    <AppLayout userRole={userRole}>
+    <AppLayout>
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -401,4 +401,78 @@ export default function SavedProjectsScreen() {
                                       <Button variant="ghost" size="icon" className="h-8 w-8">
                                         <MoreVertical className="h-4 w-4" />
                                       </Button>
-                                    </DropdownMenuTrigger>\
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem onClick={() => router.push(`/projects/${project.id}`)}>
+                                        <Eye className="h-4 w-4 mr-2" />
+                                        View Details
+                                      </DropdownMenuItem>
+                                      {userRole === "investor" && (
+                                        <DropdownMenuItem onClick={() => router.push(`/messages?project=${project.id}`)}>
+                                          <MessageCircle className="h-4 w-4 mr-2" />
+                                          Contact Founder
+                                        </DropdownMenuItem>
+                                      )}
+                                      <DropdownMenuItem
+                                        onClick={() => handleRemoveProject(project.id)}
+                                        className="text-destructive"
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Remove
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+                                
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarImage src={project.founderAvatar || "/placeholder.svg"} />
+                                    <AvatarFallback className="text-xs">{project.founderName.charAt(0)}</AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm text-muted-foreground">{project.founderName}</span>
+                                  <Badge variant="outline" className="text-xs">
+                                    {project.industry}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs">
+                                    {project.fundingGoal}
+                                  </Badge>
+                                </div>
+
+                                <div className="flex flex-wrap gap-1">
+                                  {project.tags.map((tag) => (
+                                    <Badge key={tag} variant="outline" className="text-xs">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+
+                                <div className="flex flex-wrap gap-1">
+                                  {project.customTags.map((tag) => (
+                                    <Badge key={tag} variant="secondary" className="text-xs bg-primary/10 text-primary">
+                                      <Tag className="h-3 w-3 mr-1" />
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+
+                                {project.notes && (
+                                  <div className="p-2 bg-muted/50 rounded text-xs">
+                                    <p className="text-muted-foreground line-clamp-2">{project.notes}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </AnimatePresence>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </AppLayout>
+  )
+}

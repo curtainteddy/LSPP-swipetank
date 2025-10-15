@@ -237,27 +237,27 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
                       <Button
                         variant={isActive ? "secondary" : "ghost"}
                         className={cn(
-                          "w-full justify-start h-auto p-3 text-left hover:bg-primary/10 transition-colors duration-200",
+                          "group w-full justify-start h-auto p-3 text-left hover:bg-primary/10 hover:text-white transition-colors duration-200",
                           isActive && "bg-primary/10 text-primary border border-primary/20",
                         )}
                         onClick={() => handleNavigation(item.href)}
                       >
                         <div className="flex items-center w-full">
-                          <Icon className={cn("h-5 w-5 mr-3 flex-shrink-0", isActive && "text-primary")} />
+                          <Icon className={cn("h-5 w-5 mr-3 flex-shrink-0 group-hover:text-white transition-colors", isActive && "text-primary")} />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
                               <span className="font-medium truncate">{item.title}</span>
                               {item.badge && (
                                 <Badge
                                   variant="secondary"
-                                  className="ml-2 h-5 min-w-[20px] text-xs bg-secondary/30 text-secondary-foreground"
+                                  className="ml-2 h-5 min-w-[20px] text-xs bg-secondary/30 text-secondary-foreground group-hover:bg-white/20 group-hover:text-white transition-colors"
                                 >
                                   {item.badge}
                                 </Badge>
                               )}
                             </div>
                             {item.description && (
-                              <p className="text-xs text-muted-foreground mt-1 truncate">{item.description}</p>
+                              <p className="text-xs text-muted-foreground group-hover:text-white/80 mt-1 truncate transition-colors">{item.description}</p>
                             )}
                           </div>
                         </div>
