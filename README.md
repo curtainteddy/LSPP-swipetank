@@ -1,6 +1,8 @@
-# 🚀 SwipeTank - Transform Ideas Into Startups
-
 <div align="center">
+  
+  <img src="./public/logo.png" alt="SwipeTank Logo" width="120" height="120" style="border-radius: 20px; margin-bottom: 20px;" />
+  
+  # 🚀 SwipeTank - Transform Ideas Into Startups
 
 [![Next.js](https://img.shields.io/badge/Next.js-14.2.16-black?style=flat-square&logo=next.js)](https://nextjs.org/) [![React](https://img.shields.io/badge/React-18.x-blue?style=flat-square&logo=react)](https://reactjs.org/) [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/) [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.17-38b2ac?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/) [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
