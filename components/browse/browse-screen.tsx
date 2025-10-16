@@ -16,7 +16,6 @@ import { AppLayout } from "@/components/layout/app-layout"
 import { Sidebar } from "@/components/layout/sidebar"
 import { TopNavigation } from "@/components/layout/top-navigation"
 import { useUser } from "@/contexts/user-context"
-import FabToggleRole from "@/components/ui/fab-toggle-role"
 import { motion, AnimatePresence } from "framer-motion"
 import AnalysisPanel from "./analysis-panel"
 
@@ -392,17 +391,14 @@ export default function BrowseScreen() {
               >
                 {/* Background Image - Full Screen */}
                 <div className="absolute inset-0">
-                  {currentProject.images.length > 0 ? (
-                    <img
-                      src={currentProject.images.find(img => img.isPrimary)?.url || currentProject.images[0]?.url || "/placeholder.svg"}
-                      alt={currentProject.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                      <div className="text-gray-400 text-8xl">📦</div>
-                    </div>
-                  )}
+                  <img
+                    src={currentProject.images.length > 0 
+                      ? (currentProject.images.find(img => img.isPrimary)?.url || currentProject.images[0]?.url)
+                      : "/studymate.png"
+                    }
+                    alt={currentProject.title}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
 
                 {/* Dark Overlay for Text Readability */}
@@ -575,9 +571,6 @@ export default function BrowseScreen() {
           </motion.div>
         )}
       </div>
-      
-      {/* FAB for role switching */}
-      <FabToggleRole />
 
       {/* Analysis Panel */}
       <AnalysisPanel

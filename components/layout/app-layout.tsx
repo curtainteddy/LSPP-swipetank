@@ -6,7 +6,6 @@ import { useState, useEffect } from "react"
 import { TopNavigation } from "./top-navigation"
 import { Sidebar } from "./sidebar"
 import { useUser } from "@/contexts/user-context"
-import FabToggleRole from "@/components/ui/fab-toggle-role"
 
 interface AppLayoutProps {
   children: React.ReactNode
