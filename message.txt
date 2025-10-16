@@ -1,0 +1,114 @@
+const projectsData = [
+  {
+    title: "EcoTrack Mobile",
+    description:
+      "SaaS platform & mobile app providing real-time carbon footprint analytics for logistics fleets with AI anomaly detection.",
+    status: ProjectStatus.PUBLISHED,
+    price: 150000,
+    tags: ["Climate", "AI", "SaaS", "Analytics"],
+    images: [
+      "https://zip.peshal.xyz/u/v8Be21.webp",
+      "https://zip.peshal.xyz/u/NY8ieT.webp",
+      "https://zip.peshal.xyz/u/OlsJIG.webp",
+    ],
+  },
+  {
+    title: "FinTech Dashboard",
+    description:
+      "Unified treasury & cashflow forecasting dashboard for SMEs, integrating bank feeds and predictive ML models.",
+    status: ProjectStatus.PUBLISHED,
+    price: 210000,
+    tags: ["FinTech", "ML", "SaaS"],
+    images: [
+      "https://zip.peshal.xyz/u/8eHi5n.webp",
+      "https://zip.peshal.xyz/u/OI5M3e.webp",
+    ],
+  },
+  {
+    title: "AgroSense IoT",
+    description:
+      "LoRaWAN sensor mesh & edge analytics optimizing irrigation schedules and nutrient delivery for mid-size farms.",
+    status: ProjectStatus.DRAFT,
+    price: 180000,
+    tags: ["AgriTech", "IoT", "Edge", "Sustainability"],
+    images: ["https://zip.peshal.xyz/u/LIZKU2.webp"],
+  },
+  {
+    title: "MediScan Assist",
+    description:
+      "Diagnostic assistant applying vision transformers to triage radiology images and prioritize urgent findings.",
+    status: ProjectStatus.PUBLISHED,
+    price: 320000,
+    tags: ["HealthTech", "AI", "Imaging"],
+    images: ["https://zip.peshal.xyz/u/eptrOk.webp"],
+  },
+  {
+    title: "RetailFlow Optimize",
+    description:
+      "Demand sensing & dynamic pricing engine using real-time POS + weather + event data for multi-store retailers.",
+    status: ProjectStatus.PUBLISHED,
+    price: 275000,
+    tags: ["Retail", "ML", "Optimization"],
+    images: [
+      "https://zip.peshal.xyz/u/jPm3XY.webp",
+      "https://zip.peshal.xyz/u/c8IR2M.webp",
+      "https://zip.peshal.xyz/u/S4yoDz.webp",
+    ],
+  },
+  {
+    title: "VoltShare Grid",
+    description:
+      "Peer-to-peer microgrid energy credit marketplace with on-chain settlement and smart meter reconciliation.",
+    status: ProjectStatus.DRAFT,
+    price: 400000,
+    tags: ["Energy", "Blockchain", "Marketplace"],
+    images: [
+      "https://zip.peshal.xyz/u/p7PADI.png",
+      "https://zip.peshal.xyz/u/O6o91U.png",
+    ],
+  },
+  {
+    title: "NeuroLearn Tutor",
+    description:
+      "Adaptive learning engine tailoring micro-lessons using reinforcement learning and cognitive load metrics.",
+    status: ProjectStatus.PUBLISHED,
+    price: 195000,
+    tags: ["EdTech", "AI", "Personalization"],
+    images: ["https://zip.peshal.xyz/u/oWSvb7.webp"],
+  },
+  {
+    title: "SupplyLens Visibility",
+    description:
+      "End-to-end shipment visibility & risk scoring platform correlating carrier EDI, AIS, and satellite data.",
+    status: ProjectStatus.PUBLISHED,
+    price: 260000,
+    tags: ["Logistics", "Risk", "Analytics"],
+    images: ["https://zip.peshal.xyz/u/c1Q0uI.webp"],
+  },
+  {
+    title: "UrbanAir Insights",
+    description:
+      "High-resolution air quality mapping using mobile sensor swarms and geospatial interpolation models.",
+    status: ProjectStatus.DRAFT,
+    price: 140000,
+    tags: ["Climate", "IoT", "Geospatial"],
+    images: [
+      "https://zip.peshal.xyz/u/yLCd6T.webp",
+      "https://zip.peshal.xyz/u/4fzQWh.webp",
+      "https://zip.peshal.xyz/u/2UxPEe.webp",
+    ],
+  },
+  {
+    title: "SecureCom Post-Quantum",
+    description:
+      "Post-quantum secure messaging SDK implementing hybrid Kyber + X25519 key exchange with forward secrecy.",
+    status: ProjectStatus.PUBLISHED,
+    price: 350000,
+    tags: ["Security", "PostQuantum", "SDK"],
+    images: [
+      "https://zip.peshal.xyz/u/tE0sVg.webp",
+      "https://zip.peshal.xyz/u/XKdXcx.webp",
+      "https://zip.peshal.xyz/u/NTvaZJ.webp",
+    ],
+  },
+];
